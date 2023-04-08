@@ -28,9 +28,10 @@ async function takeScreenshot(page, screenshotName) {
 }
 
 (async () => {
- try {
+  let context;
+  try {
     const browser = await chromium.launch();
-    const context = await browser.newContext({
+    context = await browser.newContext({
       recordVideo: {
         dir: '/app/videos/',
       },
@@ -53,9 +54,6 @@ async function takeScreenshot(page, screenshotName) {
     // Click the 'Continue' button to proceed with the default language
     await page.click('#language-continue');
 
-    // Navigate to the installation page
-    // await page.goto(`${wordpressUrl}/wp-admin/install.php`);
-
     await takeScreenshot(page, 'after lang continue.png');
 
     await page.fill('#weblog_title', siteTitle);
@@ -67,19 +65,18 @@ async function takeScreenshot(page, screenshotName) {
     await page.waitForSelector('table.install-success');
 
     await browser.close();
-
-    // Save video recording to the project directory
-    const video = await context.video();
-    if (video) {
-      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
-      fs.copyFileSync(video.path(), localVideoPath);
-      console.log(`Video saved to: ${localVideoPath}`);
-    }
   } catch (error) {
-    console.error('Error in test-plugin.js:', error);
+    console.error('Error in setup-wp.js:', error);
   } finally {
-    await context.close();
-    // TODO: should vid sync go in here?
+    if (context) {
+      const video = await context.video();
+      if (video) {
+        const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
+        fs.copyFileSync(video.path(), localVideoPath);
+        console.log(`Video saved to: ${localVideoPath}`);
+      }
+      await context.close();
+    }
   }
 })();
 

@@ -44,19 +44,18 @@ async function takeScreenshot(page, screenshotName) {
     assert(pluginStatus.includes('active'), 'Plugin activation failed');
 
     await browser.close();
-
-    // Save video recording to the project directory
-    const video = await context.video();
-    if (video) {
-      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
-      fs.copyFileSync(video.path(), localVideoPath);
-      console.log(`Video saved to: ${localVideoPath}`);
-    }
   } catch (error) {
     console.error('Error in test-plugin.js:', error);
   } finally {
-    await context.close();
-    // TODO: should vid sync go in here?
+    if (context) {
+      const video = await context.video();
+      if (video) {
+        const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
+        fs.copyFileSync(video.path(), localVideoPath);
+        console.log(`Video saved to: ${localVideoPath}`);
+      }
+      await context.close();
+    }
   }
 })();
 
