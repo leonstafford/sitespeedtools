@@ -10,6 +10,7 @@ async function takeScreenshot(page, screenshotName) {
 }
 
 (async () => {
+ let context;
  try {
     const browser = await chromium.launch();
     const context = await browser.newContext({
@@ -44,9 +45,7 @@ async function takeScreenshot(page, screenshotName) {
     assert(pluginStatus.includes('active'), 'Plugin activation failed');
 
     await browser.close();
-  } catch (error) {
-    console.error('Error in test-plugin.js:', error);
-  } finally {
+
     if (context) {
       const video = await page.video();
       if (video) {
@@ -56,6 +55,8 @@ async function takeScreenshot(page, screenshotName) {
       }
       await context.close();
     }
+  } catch (error) {
+    console.error('Error in test-plugin.js:', error);
   }
 })();
 

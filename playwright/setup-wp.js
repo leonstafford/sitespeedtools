@@ -31,7 +31,7 @@ async function takeScreenshot(page, screenshotName) {
   let context;
   try {
     const browser = await chromium.launch();
-    context = await browser.newContext({
+    const context = await browser.newContext({
       recordVideo: {
         dir: '/app/videos/',
       },
