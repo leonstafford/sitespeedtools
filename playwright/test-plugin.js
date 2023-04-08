@@ -13,8 +13,8 @@ async function takeScreenshot(page, screenshotName) {
  let browser;
  let context;
  try {
-    const browser = await chromium.launch();
-    const context = await browser.newContext({
+    browser = await chromium.launch();
+    context = await browser.newContext({
       recordVideo: {
         dir: '/app/videos/',
       },
@@ -50,24 +50,20 @@ async function takeScreenshot(page, screenshotName) {
     const pluginStatus = await page.$eval(pluginRowSelector, (el) => el.className);
     assert(pluginStatus.includes('active'), 'Plugin activation failed');
 
-    // // Save video recording to the project directory
-    // const video = await context.newVideo();
-    // if (video) {
-    //   const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(await video.path()));
-    //   fs.copyFileSync(await video.path(), localVideoPath);
-    //   console.log(`Video saved to: ${localVideoPath}`);
-    // }
+    // Save video recording to the project directory
+    const video = await context.newVideo();
+    if (video) {
+      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(await video.path()));
+      fs.copyFileSync(await video.path(), localVideoPath);
+      console.log(`Video saved to: ${localVideoPath}`);
+    }
 
     await context.close();
     await browser.close();
   } catch (error) {
     console.error('Error in test-plugin.js:', error);
-    if ( context ) {
-      await context.close();
-    }
-    if ( browser ) {
-      await browser.close();
-    }
+    await context.close();
+    await browser.close();
     process.exit(1);
   }
 })();
