@@ -81,8 +81,12 @@ async function takeScreenshot(page, screenshotName) {
     await browser.close();
   } catch (error) {
     console.error('Error in setup-wp.js:', error);
-    await context.close();
-    await browser.close();
+    if ( context ) {
+      await context.close();
+    }
+    if ( browser ) {
+      await browser.close();
+    }
     process.exit(1);
   }
 })();

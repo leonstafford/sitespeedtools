@@ -23,13 +23,18 @@ async function takeScreenshot(page, screenshotName) {
 
     const wordpressUrl = process.env.WORDPRESS_URL;
     const pluginName = process.env.PLUGIN_NAME;
+    const adminUser = process.env.WORDPRESS_ADMIN_USER;
+    const adminPassword = process.env.WORDPRESS_ADMIN_PASSWORD;
 
     await page.goto(`${wordpressUrl}/wp-login.php`);
 
     await takeScreenshot(page, 'login.png');
 
-    await page.fill('#user_login', 'admin');
-    await page.fill('#user_pass', 'password');
+    await page.fill('#user_login', adminUser);
+    await page.fill('#user_pass', adminPassword);
+
+    await takeScreenshot(page, 'userpassentered.png');
+
     await page.click('#wp-submit');
 
     await page.waitForSelector('#wpadminbar');
@@ -45,20 +50,24 @@ async function takeScreenshot(page, screenshotName) {
     const pluginStatus = await page.$eval(pluginRowSelector, (el) => el.className);
     assert(pluginStatus.includes('active'), 'Plugin activation failed');
 
-    // Save video recording to the project directory
-    const video = await context.newVideo();
-    if (video) {
-      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(await video.path()));
-      fs.copyFileSync(await video.path(), localVideoPath);
-      console.log(`Video saved to: ${localVideoPath}`);
-    }
+    // // Save video recording to the project directory
+    // const video = await context.newVideo();
+    // if (video) {
+    //   const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(await video.path()));
+    //   fs.copyFileSync(await video.path(), localVideoPath);
+    //   console.log(`Video saved to: ${localVideoPath}`);
+    // }
 
     await context.close();
     await browser.close();
   } catch (error) {
     console.error('Error in test-plugin.js:', error);
-    await context.close();
-    await browser.close();
+    if ( context ) {
+      await context.close();
+    }
+    if ( browser ) {
+      await browser.close();
+    }
     process.exit(1);
   }
 })();
