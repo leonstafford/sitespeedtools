@@ -1,22 +1,19 @@
 const { chromium } = require('playwright');
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 (async () => {
   const browser = await chromium.launch();
-  const context = await browser.newContext();
+  const context = await browser.newContext({
+    recordVideo: {
+      dir: '/app/videos/',
+    },
+  });
   const page = await context.newPage();
 
   const wordpressUrl = process.env.WORDPRESS_URL;
   const pluginName = process.env.PLUGIN_NAME;
-
-  await page.goto(`${wordpressUrl}/wp-admin/install.php`);
-  await page.fill('#weblog_title', 'Test Site');
-  await page.fill('#user_login', 'admin');
-  await page.fill('#pass1-text', 'password');
-  await page.fill('#admin_email', 'test@example.com');
-  await page.click('#submit');
-
-  await page.waitForSelector('.wp-signup-complete');
 
   await page.goto(`${wordpressUrl}/wp-login.php`);
   await page.fill('#user_login', 'admin');
@@ -37,4 +34,13 @@ const assert = require('assert');
   assert(pluginStatus.includes('active'), 'Plugin activation failed');
 
   await browser.close();
+
+  // Save video recording to the project directory
+  const video = await context.video();
+  if (video) {
+    const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
+    fs.copyFileSync(video.path(), localVideoPath);
+    console.log(`Video saved to: ${localVideoPath}`);
+  }
 })();
+

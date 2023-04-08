@@ -8,3 +8,5 @@ RUN npm install
 
 COPY test-plugin.js ./
 
+RUN mkdir /app/videos
+
