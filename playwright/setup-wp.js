@@ -2,6 +2,25 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
+async function waitForDBReady(page) {
+  let maxRetries = 20;
+  while (maxRetries > 0) {
+    try {
+      await page.goto('http://wordpress', { waitUntil: 'networkidle' });
+      if (await page.$('.language-chooser') !== null) {
+        console.log('Database is ready. Continuing with setup...');
+        return;
+      }
+      throw new Error('DB connection error screen found');
+    } catch (error) {
+      console.log('Error connecting to the database. Retrying...');
+      maxRetries--;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+  }
+  throw new Error('Unable to establish a connection to the database');
+}
+
 async function takeScreenshot(page, screenshotName) {
   const screenshotPath = `/app/screenshots/${screenshotName}`;
   await page.screenshot({ path: screenshotPath });
@@ -24,7 +43,9 @@ async function takeScreenshot(page, screenshotName) {
   const adminEmail = process.env.WORDPRESS_ADMIN_EMAIL;
 
   // Navigate to the language selection page
-  await page.goto(`${wordpressUrl}/wp-admin/install.php`);
+  await page.goto(`${wordpressUrl}/wp-admin/install.php`, { waitUntil: 'networkidle' });
+
+  await waitForDBReady(page);
 
   await takeScreenshot(page, 'language-selection.png');
 
@@ -33,6 +54,8 @@ async function takeScreenshot(page, screenshotName) {
 
   // Navigate to the installation page
   // await page.goto(`${wordpressUrl}/wp-admin/install.php`);
+
+  await takeScreenshot(page, 'after lang continue.png');
 
   await page.fill('#weblog_title', siteTitle);
   await page.fill('#user_login', adminUser);
