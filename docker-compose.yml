@@ -40,7 +40,6 @@ services:
       WORDPRESS_URL: "http://wordpress:80"
       PLUGIN_NAME: "sitespeedtools"
     volumes:
-      - ./playwright:/app
       - ./videos:/app/videos
 
 volumes:

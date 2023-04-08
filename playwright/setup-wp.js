@@ -21,7 +21,7 @@ const path = require('path');
   await page.goto(`${wordpressUrl}/wp-admin/setup-config.php`);
 
   // Click the 'Continue' button to proceed with the default language
-  await page.click('.step button');
+  await page.click('#language-continue');
 
   // Navigate to the installation page
   await page.goto(`${wordpressUrl}/wp-admin/install.php`);
@@ -32,7 +32,7 @@ const path = require('path');
   await page.fill('#admin_email', adminEmail);
   await page.click('#submit');
 
-  await page.waitForSelector('.wp-signup-complete');
+  await page.waitForSelector('table.install-success');
 
   await browser.close();
 
