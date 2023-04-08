@@ -43,9 +43,10 @@ async function takeScreenshot(page, screenshotName) {
     const pluginRowSelector = `tr[data-slug="${pluginName}"]`;
     await page.waitForSelector(pluginRowSelector);
 
-    const activateButtonSelector = `${pluginRowSelector} a[href*="action=activate"]`;
+    // const activateButtonSelector = `${pluginRowSelector} a[href*="action=activate"]`;
+    const activateButtonSelector = `#activate-${pluginName}`;
     await page.click(activateButtonSelector);
-    await page.waitForSelector(`${pluginRowSelector}.active`);
+    // await page.waitForSelector(`${pluginRowSelector}.active`);
 
     const pluginStatus = await page.$eval(pluginRowSelector, (el) => el.className);
     assert(pluginStatus.includes('active'), 'Plugin activation failed');
