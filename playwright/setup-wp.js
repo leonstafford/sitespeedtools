@@ -2,6 +2,12 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
+async function takeScreenshot(page, screenshotName) {
+  const screenshotPath = `/app/screenshots/${screenshotName}`;
+  await page.screenshot({ path: screenshotPath });
+  console.log(`Screenshot saved: ${screenshotPath}`);
+}
+
 (async () => {
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -18,13 +24,15 @@ const path = require('path');
   const adminEmail = process.env.WORDPRESS_ADMIN_EMAIL;
 
   // Navigate to the language selection page
-  await page.goto(`${wordpressUrl}/wp-admin/setup-config.php`);
+  await page.goto(`${wordpressUrl}/wp-admin/install.php`);
+
+  await takeScreenshot(page, 'language-selection.png');
 
   // Click the 'Continue' button to proceed with the default language
   await page.click('#language-continue');
 
   // Navigate to the installation page
-  await page.goto(`${wordpressUrl}/wp-admin/install.php`);
+  // await page.goto(`${wordpressUrl}/wp-admin/install.php`);
 
   await page.fill('#weblog_title', siteTitle);
   await page.fill('#user_login', adminUser);

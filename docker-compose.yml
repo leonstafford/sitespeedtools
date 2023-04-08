@@ -41,6 +41,7 @@ services:
       PLUGIN_NAME: "sitespeedtools"
     volumes:
       - ./videos:/app/videos
+      - ./screenshots:/app/screenshots
 
 volumes:
   db_data: {}

@@ -3,6 +3,12 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
+async function takeScreenshot(page, screenshotName) {
+  const screenshotPath = `/app/screenshots/${screenshotName}`;
+  await page.screenshot({ path: screenshotPath });
+  console.log(`Screenshot saved: ${screenshotPath}`);
+}
+
 (async () => {
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -16,6 +22,9 @@ const path = require('path');
   const pluginName = process.env.PLUGIN_NAME;
 
   await page.goto(`${wordpressUrl}/wp-login.php`);
+
+  await takeScreenshot(page, 'login.png');
+
   await page.fill('#user_login', 'admin');
   await page.fill('#user_pass', 'password');
   await page.click('#wp-submit');
