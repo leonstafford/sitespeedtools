@@ -44,6 +44,8 @@ async function takeScreenshot(page, screenshotName) {
     const adminPassword = process.env.WORDPRESS_ADMIN_PASSWORD;
     const adminEmail = process.env.WORDPRESS_ADMIN_EMAIL;
 
+    console.log(wordpressUrl,siteTitle,adminUser,adminPassword,adminEmail);
+
     // Navigate to the language selection page
     await page.goto(`${wordpressUrl}/wp-admin/install.php`, { waitUntil: 'networkidle' });
 
@@ -58,18 +60,16 @@ async function takeScreenshot(page, screenshotName) {
 
     await page.fill('#weblog_title', siteTitle);
     await page.fill('#user_login', adminUser);
-    await page.fill('#pass1-text', adminPassword);
+    await page.fill('#pass1', adminPassword);
     await page.fill('#admin_email', adminEmail);
     await page.click('#submit');
 
     await page.waitForSelector('table.install-success');
 
     await browser.close();
-  } catch (error) {
-    console.error('Error in setup-wp.js:', error);
-  } finally {
+
     if (context) {
-      const video = await context.video();
+      const video = await page.video();
       if (video) {
         const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
         fs.copyFileSync(video.path(), localVideoPath);
@@ -77,6 +77,8 @@ async function takeScreenshot(page, screenshotName) {
       }
       await context.close();
     }
+  } catch (error) {
+    console.error('Error in setup-wp.js:', error);
   }
 })();
 

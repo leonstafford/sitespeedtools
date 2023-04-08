@@ -48,7 +48,7 @@ async function takeScreenshot(page, screenshotName) {
     console.error('Error in test-plugin.js:', error);
   } finally {
     if (context) {
-      const video = await context.video();
+      const video = await page.video();
       if (video) {
         const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
         fs.copyFileSync(video.path(), localVideoPath);
