@@ -28,51 +28,58 @@ async function takeScreenshot(page, screenshotName) {
 }
 
 (async () => {
-  const browser = await chromium.launch();
-  const context = await browser.newContext({
-    recordVideo: {
-      dir: '/app/videos/',
-    },
-  });
-  const page = await context.newPage();
+ try {
+    const browser = await chromium.launch();
+    const context = await browser.newContext({
+      recordVideo: {
+        dir: '/app/videos/',
+      },
+    });
+    const page = await context.newPage();
 
-  const wordpressUrl = process.env.WORDPRESS_URL;
-  const siteTitle = process.env.WORDPRESS_TITLE;
-  const adminUser = process.env.WORDPRESS_ADMIN_USER;
-  const adminPassword = process.env.WORDPRESS_ADMIN_PASSWORD;
-  const adminEmail = process.env.WORDPRESS_ADMIN_EMAIL;
+    const wordpressUrl = process.env.WORDPRESS_URL;
+    const siteTitle = process.env.WORDPRESS_TITLE;
+    const adminUser = process.env.WORDPRESS_ADMIN_USER;
+    const adminPassword = process.env.WORDPRESS_ADMIN_PASSWORD;
+    const adminEmail = process.env.WORDPRESS_ADMIN_EMAIL;
 
-  // Navigate to the language selection page
-  await page.goto(`${wordpressUrl}/wp-admin/install.php`, { waitUntil: 'networkidle' });
+    // Navigate to the language selection page
+    await page.goto(`${wordpressUrl}/wp-admin/install.php`, { waitUntil: 'networkidle' });
 
-  await waitForDBReady(page);
+    await waitForDBReady(page);
 
-  await takeScreenshot(page, 'language-selection.png');
+    await takeScreenshot(page, 'language-selection.png');
 
-  // Click the 'Continue' button to proceed with the default language
-  await page.click('#language-continue');
+    // Click the 'Continue' button to proceed with the default language
+    await page.click('#language-continue');
 
-  // Navigate to the installation page
-  // await page.goto(`${wordpressUrl}/wp-admin/install.php`);
+    // Navigate to the installation page
+    // await page.goto(`${wordpressUrl}/wp-admin/install.php`);
 
-  await takeScreenshot(page, 'after lang continue.png');
+    await takeScreenshot(page, 'after lang continue.png');
 
-  await page.fill('#weblog_title', siteTitle);
-  await page.fill('#user_login', adminUser);
-  await page.fill('#pass1-text', adminPassword);
-  await page.fill('#admin_email', adminEmail);
-  await page.click('#submit');
+    await page.fill('#weblog_title', siteTitle);
+    await page.fill('#user_login', adminUser);
+    await page.fill('#pass1-text', adminPassword);
+    await page.fill('#admin_email', adminEmail);
+    await page.click('#submit');
 
-  await page.waitForSelector('table.install-success');
+    await page.waitForSelector('table.install-success');
 
-  await browser.close();
+    await browser.close();
 
-  // Save video recording to the project directory
-  const video = await context.video();
-  if (video) {
-    const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
-    fs.copyFileSync(video.path(), localVideoPath);
-    console.log(`Video saved to: ${localVideoPath}`);
+    // Save video recording to the project directory
+    const video = await context.video();
+    if (video) {
+      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(video.path()));
+      fs.copyFileSync(video.path(), localVideoPath);
+      console.log(`Video saved to: ${localVideoPath}`);
+    }
+  } catch (error) {
+    console.error('Error in test-plugin.js:', error);
+  } finally {
+    await context.close();
+    // TODO: should vid sync go in here?
   }
 })();
 
