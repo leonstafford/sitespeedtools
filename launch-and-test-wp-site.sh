@@ -10,28 +10,67 @@ docker-compose run --rm tester node setup-wp.js
 # In order to execute WP-CLI commands from Playwright, we'll setup 
 # SSH connectivity from "tester" to "wordpress"
 
-echo "Generating public key on testing container (don't remove the container!)"
-docker-compose run tester sh -c 'ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa'
+# echo "Generating public key on testing container (don't remove the container!)"
+# docker-compose run tester sh -c 'ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa'
 
-echo "Saving public key from tester container as variable"
-TESTER_PUB_KEY=$(docker-compose exec tester sh -c 'cat ~/.ssh/id_rsa.pub')
+# echo "Saving public key from tester container as variable"
+# # TESTER_PUB_KEY=$(docker-compose exec -T tester sh -c 'cat ~/.ssh/id_rsa.pub')
+# docker-compose run tester sh -c 'cat ~/.ssh/id_rsa.pub > /tmp/pubkey.txt'
+# TESTER_PUB_KEY=$(docker-compose exec tester sh -c 'cat /tmp/pubkey.txt')
+# 
+# echo "Confirming public key was captured"
+# echo "$TESTER_PUB_KEY"
 
-echo "Confirming public key was captured"
-echo "$TESTER_PUB_KEY"
+echo "enable SSH without authentication on the wordpress container"
 
-echo "Enabling SSH server on WordPress container"
-docker-compose run wordpress bash -c "apt-get update -q && apt-get install -yq openssh-server"
-# all "tester" container to SSH into the "wordpress" container via public key authentication
-docker-compose run wordpress bash -c "mkdir -p ~/.ssh && echo '$TESTER_PUB_KEY' >> ~/.ssh/authorized_keys"
-# start the SSH service
-docker-compose run wordpress bash -c "service start ssh"
+docker-compose exec wordpress bash -c "\
+apt-get update -qq && \
+apt-get install -yqq openssh-server && \
+echo -e '\nPasswordAuthentication no\nChallengeResponseAuthentication no\nUsePAM no\nPermitEmptyPasswords yes' >> /etc/ssh/sshd_config && \
+service ssh restart"
 
-# verify SSH connectivity between containers
-docker-compose run tester sh -c 'ssh root@wordpress -c "hostname"'
+echo "Committing changes to a new image to temporarily persist state"
+docker commit sitespeedtools_wordpress_1 my-wordpress-with-ssh
+
+docker ps
+docker image ls | grep wordpress
+
+echo "Waiting to ensure commit completes"
+sleep 5
+
+docker ps
+docker image ls | grep wordpress
+
+echo "Cleaning up the running containers"
+docker-compose down
+
+echo "running new container accepting SSH without auth"
+docker run \
+  --name wordpress \
+  -d \
+  -p 8000:80 \
+  -v ./sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools \
+  -v wp_data:/var/www/html \
+  --env WORDPRESS_DB_HOST=db:3306 \
+  --env WORDPRESS_DB_USER=wordpress \
+  --env WORDPRESS_DB_PASSWORD=wordpress \
+  --env WORDPRESS_DB_NAME=wordpress \
+  my-wordpress-with-ssh:latest
+
+
+
+# # all "tester" container to SSH into the "wordpress" container via public key authentication
+# docker-compose run wordpress bash -c "mkdir -p ~/.ssh && echo '$TESTER_PUB_KEY' >> ~/.ssh/authorized_keys"
+# # start the SSH service
+# docker-compose run wordpress bash -c "service start ssh"
+
+# verify SSH connectivity between by tester SSH'ing to wordpress and printing hostname
+docker-compose run tester sh -c 'ssh -tt root@wordpress "hostname"'
 
 
 # debug
 exit 1
+
 
 
 # install WP-CLI so we can use it via ssh2
