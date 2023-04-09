@@ -41,15 +41,16 @@ sleep 5
 docker ps
 docker image ls | grep wordpress
 
-echo "Cleaning up the running containers"
-docker-compose down
+echo "Shut down original WP container"
+# docker-compose down
+sudo docker stop $(sudo docker ps | grep "sitespeedtools_wordpress_1" | cut -d " " -f 1)
 
 echo "running new container accepting SSH without auth"
 docker run \
-  --name wordpress \
+  --name sitespeedtools_wordpress_1 \
   -d \
   -p 8000:80 \
-  -v ./sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools \
+  -v sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools \
   -v wp_data:/var/www/html \
   --env WORDPRESS_DB_HOST=db:3306 \
   --env WORDPRESS_DB_USER=wordpress \
