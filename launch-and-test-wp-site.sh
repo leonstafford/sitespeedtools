@@ -43,11 +43,11 @@ docker image ls | grep wordpress
 
 echo "Shut down original WP container"
 # docker-compose down
-sudo docker stop $(sudo docker ps | grep "sitespeedtools_wordpress_1" | cut -d " " -f 1)
+docker stop $(docker ps | grep "sitespeedtools_wordpress_1" | cut -d " " -f 1)
 
 echo "running new container accepting SSH without auth"
 docker run \
-  --name sitespeedtools_wordpress_1 \
+  --name sitespeedtools_wordpress_snapshot \
   -d \
   -p 8000:80 \
   -v sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools \
