@@ -65,22 +65,28 @@ docker run \
 # # start the SSH service
 # docker-compose run wordpress bash -c "service start ssh"
 
-# verify SSH connectivity between by tester SSH'ing to wordpress and printing hostname
-docker-compose run tester sh -c 'ssh -tt root@wordpress "hostname"'
+
+# Debug: reenable
+# echo "verify SSH connectivity between by tester SSH'ing to wordpress and printing hostname"
+# docker-compose run tester sh -c 'ssh -tt root@wordpress "hostname"'
 
 
-# debug
-exit 1
 
 
-
-# install WP-CLI so we can use it via ssh2
-docker-compose exec wordpress /bin/bash -c "curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
- chmod +x wp-cli.phar && \
- mv wp-cli.phar /usr/local/bin/wp && \
- wp --allow-root --info"
- 
-docker-compose exec wordpress /bin/bash -c "wp --allow-root user list"
-
-docker-compose run --rm tester node test-plugin.js
+#   
+#   
+#   # debug
+#   exit 1
+#   
+#   echo "shouldn't make it here"
+#   
+#   # install WP-CLI so we can use it via ssh2
+#   docker-compose exec wordpress /bin/bash -c "curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+#    chmod +x wp-cli.phar && \
+#    mv wp-cli.phar /usr/local/bin/wp && \
+#    wp --allow-root --info"
+#    
+#   docker-compose exec wordpress /bin/bash -c "wp --allow-root user list"
+#   
+#   docker-compose run --rm tester node test-plugin.js
 

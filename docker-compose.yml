@@ -15,7 +15,7 @@ services:
   wordpress:
     depends_on:
       - db
-    image: wordpress:latest
+    build: ./wordpress
     volumes:
       - ./sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools
       - wp_data:/var/www/html
@@ -25,7 +25,7 @@ services:
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress
     ports:
-      - "8000:80"
+      - "80:80"
     restart: always
 
   tester:
@@ -33,7 +33,7 @@ services:
     depends_on:
       - wordpress
     environment:
-      WORDPRESS_URL: "http://wordpress:80"
+      WORDPRESS_URL: "http://localhost:80"
       WORDPRESS_TITLE: 'Test Site'
       WORDPRESS_ADMIN_USER: 'admin'
       WORDPRESS_ADMIN_PASSWORD: 'MySbXoHchVqBaxJACYc2Uin59KzXfb'
