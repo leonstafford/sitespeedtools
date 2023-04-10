@@ -19,9 +19,11 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
  mv wp-cli.phar /usr/local/bin/wp && \
  wp --allow-root --info
 
+# for run/exec/ssh sessions
 RUN echo "alias wp='wp --allow-root'" >> ~/.bashrc
 
-RUN wp core download
+# still need full path
+RUN /usr/local/bin/wp --allow-root core download
 
 # workdir for ssh
 RUN mkdir -p /run/sshd
@@ -33,7 +35,12 @@ RUN ssh-keygen -A
 # Run sshd from WP container, to allow driving WP-CLI from JS tests
 ADD ./conf/sshd_config /etc/ssh/sshd_config
 
-EXPOSE 22
-EXPOSE 80
+ADD ./run-sshd-and-apache2.sh /run-sshd-and-apache2.sh
+ADD ./run-sshd-and-apache2.sh /run-sshd-and-apache2.sh
 
-CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config"]
+EXPOSE 22 80
+
+# we need to run both sshd and the WP image's built-in CMD ["apache2-foreground"]
+# CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config"]
+
+CMD ["/run-sshd-and-apache2.sh"]
