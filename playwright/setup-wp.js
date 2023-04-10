@@ -13,12 +13,12 @@ async function waitForDBReady(page) {
       }
       throw new Error('DB connection error screen found');
     } catch (error) {
-      console.log('Error connecting to the database. Retrying...');
+      console.log('Error connecting to the database/WP installer. Retrying...');
       maxRetries--;
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
-  throw new Error('Unable to establish a connection to the database');
+  throw new Error('Unable to establish a connection to the database/WP installer');
 }
 
 async function takeScreenshot(page, screenshotName) {

@@ -17,8 +17,7 @@ services:
       - db
     build: ./wordpress
     volumes:
-      - ./sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools
-      - wp_data:/var/www/html
+      - ./sitespeedtools:/sitespeedtools
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wordpress
@@ -43,6 +42,21 @@ services:
     volumes:
       - ./videos:/app/videos
       - ./screenshots:/app/screenshots
+  wpcli:
+    build: ./wpcli
+    depends_on:
+      - wordpress
+      - db
+    volumes:
+      - ./sitespeedtools:/sitespeedtools
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    entrypoint: wp
+    restart: "no"
+
 
 volumes:
   db_data: {}
