@@ -11,12 +11,14 @@ RUN apt-get update -qq && \
 
 # workdir for ssh
 RUN mkdir -p /run/sshd
+RUN mkdir -p /var/run/sshd
 
 # generate server keys
 RUN ssh-keygen -A
 
 # Run sshd from WP container, to allow driving WP-CLI from JS tests
 ADD ./conf/sshd_config /etc/ssh/sshd_config
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D", "-o", "ListenAddress=0.0.0.0", "&"]
 
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config"]
