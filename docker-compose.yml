@@ -25,7 +25,6 @@ services:
       WORDPRESS_DB_NAME: wordpress
     ports:
       - "80:80"
-      - "2222:22"
     restart: always
 
   tester:
@@ -54,8 +53,9 @@ services:
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress
-    entrypoint: wp
-    restart: "no"
+    ports:
+      - "2222:22"
+    restart: always
 
 
 volumes:
