@@ -1,0 +1,7 @@
+Port 22
+PasswordAuthentication yes
+ChallengeResponseAuthentication no
+UsePAM no
+PermitEmptyPasswords yes
+PermitRootLogin yes
+LogLevel VERBOSE

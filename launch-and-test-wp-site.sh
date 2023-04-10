@@ -21,43 +21,6 @@ docker-compose run --rm tester node setup-wp.js
 # echo "Confirming public key was captured"
 # echo "$TESTER_PUB_KEY"
 
-echo "enable SSH without authentication on the wordpress container"
-
-docker-compose exec wordpress bash -c "\
-apt-get update -qq && \
-apt-get install -yqq openssh-server && \
-echo -e '\nPasswordAuthentication no\nChallengeResponseAuthentication no\nUsePAM no\nPermitEmptyPasswords yes' >> /etc/ssh/sshd_config && \
-service ssh restart"
-
-echo "Committing changes to a new image to temporarily persist state"
-docker commit sitespeedtools_wordpress_1 my-wordpress-with-ssh
-
-docker ps
-docker image ls | grep wordpress
-
-echo "Waiting to ensure commit completes"
-sleep 5
-
-docker ps
-docker image ls | grep wordpress
-
-echo "Shut down original WP container"
-# docker-compose down
-docker stop $(docker ps | grep "sitespeedtools_wordpress_1" | cut -d " " -f 1)
-
-echo "running new container accepting SSH without auth"
-docker run \
-  --name sitespeedtools_wordpress_snapshot \
-  -d \
-  -p 8000:80 \
-  -v sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools \
-  -v wp_data:/var/www/html \
-  --env WORDPRESS_DB_HOST=db:3306 \
-  --env WORDPRESS_DB_USER=wordpress \
-  --env WORDPRESS_DB_PASSWORD=wordpress \
-  --env WORDPRESS_DB_NAME=wordpress \
-  my-wordpress-with-ssh:latest
-
 
 
 # # all "tester" container to SSH into the "wordpress" container via public key authentication
