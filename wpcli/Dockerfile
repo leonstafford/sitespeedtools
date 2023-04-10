@@ -9,7 +9,7 @@ USER root
 # change root password to `ubuntu`
 RUN echo 'root:ubuntu' | chpasswd
 
-WORKDIR  /cli
+WORKDIR  /
 
 # install WP-CLI so we can use it via ssh2
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
@@ -19,6 +19,8 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 
 # for run/exec/ssh sessions
 RUN echo "alias wp='wp --allow-root'" >> ~/.bashrc
+
+WORKDIR  /var/www/html
 
 # install WP first
 # RUN /usr/local/bin/wp --allow-root core download
@@ -43,6 +45,7 @@ EXPOSE 22 80
 
 # we need to run both sshd and the WP image's built-in CMD ["apache2-foreground"]
 CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config"]
+# /usr/sbin/sshd -D -e -f /etc/ssh/sshd_config &
 
 # CMD ["/run-sshd-and-apache2.sh"]
 # CMD ["/usr/bin/supervisord"]
