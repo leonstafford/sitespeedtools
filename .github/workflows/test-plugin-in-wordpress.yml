@@ -1,0 +1,21 @@
+name: Run Site Speed Tools plugin tests within WordPress environment
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  launch_and_test_wordpress_site:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Install Docker and Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install docker.io docker-compose -y
+      
+    - name: Launch and Test WordPress Site
+      run: |
+        ./launch-and-test-wp-site.sh
