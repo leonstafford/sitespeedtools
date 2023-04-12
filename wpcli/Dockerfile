@@ -1,6 +1,12 @@
-FROM wordpress:latest
+FROM ubuntu:latest
 
-# Enable SSH without authentication on the wordpress container                  
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -qq && \
+    apt-get install -yqq tzdata && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update -qq && \
     apt-get install -yqq openssh-server telnet vim curl less supervisor
 

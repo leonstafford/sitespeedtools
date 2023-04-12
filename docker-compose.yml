@@ -17,7 +17,8 @@ services:
       - db
     build: ./wordpress
     volumes:
-      - ./sitespeedtools:/sitespeedtools
+      - wp_data:/var/www/html
+      - ./sitespeedtools:/var/www/html/wp-content/plugins/sitespeedtools
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wordpress
@@ -25,6 +26,22 @@ services:
       WORDPRESS_DB_NAME: wordpress
     ports:
       - "80:80"
+    restart: always
+
+  wpcli:
+    build: ./wpcli
+    depends_on:
+      - wordpress
+      - db
+    volumes:
+      - wp_data:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    ports:
+      - "2222:22"
     restart: always
 
   tester:
@@ -41,21 +58,6 @@ services:
     volumes:
       - ./videos:/app/videos
       - ./screenshots:/app/screenshots
-  wpcli:
-    build: ./wpcli
-    depends_on:
-      - wordpress
-      - db
-    volumes:
-      - ./sitespeedtools:/sitespeedtools
-    environment:
-      WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: wordpress
-      WORDPRESS_DB_NAME: wordpress
-    ports:
-      - "2222:22"
-    restart: always
 
 
 volumes:
