@@ -2,8 +2,8 @@
 
 echo "build our WordPress, MySQL and Playwright containers"
 ./build-containers.sh
-echo "launch the WordPress and MySQL containers"
-docker-compose up -d db wordpress
+echo "launching just the WordPress, MySQL and WP-CLI containers"
+docker-compose up -d wordpress db wpcli
 echo "use Playwright to complete WordPress installation"
 docker-compose run --rm tester node setup-wp.js
 
