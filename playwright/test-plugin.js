@@ -127,7 +127,7 @@ async function takeScreenshot(page, screenshotName) {
     const page = await context.newPage();
 
     const wordpressUrl = process.env.WORDPRESS_URL;
-    const pluginName = process.env.PLUGIN_NAME;
+    const pluginName = process.env.PLUGIN_NAME; // "sitespeedtools"
     const adminUser = process.env.WORDPRESS_ADMIN_USER;
     const adminPassword = process.env.WORDPRESS_ADMIN_PASSWORD;
 
@@ -166,8 +166,9 @@ async function takeScreenshot(page, screenshotName) {
     console.log('Active plugins after activation:', activePluginsAfter);
 
     const activatedPlugin = activePluginsAfter.find(plugin => plugin.name === pluginName);
-    assert(activatedPlugin, `The plugin "${pluginName}" was not activated`);
 
+    assert(activatedPlugin, `The plugin "${pluginName}" was not activated`);
+    
     // Save video recording to the project directory
     const videoFilePath = path.join('/app/videos/', `${context._id}.webm`);
 
@@ -179,6 +180,7 @@ async function takeScreenshot(page, screenshotName) {
 
     await context.close();
     await browser.close();
+    process.exit(0);
   } catch (error) {
     console.error('Error in test-plugin.js:', error);
     await context.close();
