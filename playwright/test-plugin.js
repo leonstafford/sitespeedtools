@@ -11,17 +11,17 @@ sshConn.on('ready', async () => {
   console.log('SSH connection established');
   
   // Print all environment variables
-  sshConn.exec('printenv', (err, stream) => {
-    if (err) throw err;
-    
-    stream.on('close', (code, signal) => {
-      console.log('printenv command exited with code', code);
-    }).on('data', (data) => {
-      console.log('Environment variables:', data.toString());
-    }).stderr.on('data', (data) => {
-      console.log('stderr:', data.toString());
-    });
-  });
+  // sshConn.exec('printenv', (err, stream) => {
+  //   if (err) throw err;
+  //   
+  //   stream.on('close', (code, signal) => {
+  //     console.log('printenv command exited with code', code);
+  //   }).on('data', (data) => {
+  //     console.log('Environment variables:', data.toString());
+  //   }).stderr.on('data', (data) => {
+  //     console.log('stderr:', data.toString());
+  //   });
+  // });
 });
 
 
@@ -32,6 +32,54 @@ sshConn.connect({
   username: 'root',
   password: 'ubuntu'
 });
+
+// help debug scren recording or screenshots by showing element selectors
+async function debugHighlightElements(page, containsText) {
+  await page.evaluate((containsText) => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .debug-selector {
+        position: absolute;
+        font-size: 12px;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 2px;
+        border-radius: 3px;
+        z-index: 9999;
+      }
+    `;
+    document.head.append(style);
+
+    const elements = containsText
+      ? document.evaluate(
+          `//*[contains(text(), '${containsText}')]`,
+          document,
+          null,
+          XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+          null
+        )
+      : document.querySelectorAll('*');
+
+    for (let i = 0; i < elements.snapshotLength; i++) {
+      const el = containsText ? elements.snapshotItem(i) : elements[i];
+
+      let cssSelector = '';
+      if (el.id) {
+        cssSelector = `#${el.id}`;
+      } else if (el.className && typeof el.className === 'string') {
+        cssSelector = '.' + el.className.trim().replace(/\s+/g, '.');
+      } else {
+        cssSelector = el.tagName.toLowerCase();
+      }
+
+      const debugElement = document.createElement('div');
+      debugElement.classList.add('debug-selector');
+      debugElement.textContent = cssSelector;
+      el.style.position = 'relative';
+      el.append(debugElement);
+    }
+  }, containsText);
+}
 
 async function getActivePluginsSSH() {
   return new Promise((resolve, reject) => {
@@ -102,8 +150,17 @@ async function takeScreenshot(page, screenshotName) {
     const activePluginsBefore = await getActivePluginsSSH();
     console.log('Active plugins before activation:', activePluginsBefore);
 
-    const activateButtonSelector = `#activate-${pluginName}`;
-    await page.click(activateButtonSelector);
+    // show selectors for all emenetns on the page
+    await debugHighlightElements(page, 'Activate');
+    await takeScreenshot(page, 'plugins page before activation.png');
+
+    const activateButtonSelector = `#activate-site-speed-tools`;
+    await page.waitForSelector(activateButtonSelector);
+    await page.click(activateButtonSelector); // Click the element
+
+    const deactivateButtonSelector = `#deactivate-site-speed-tools`;
+    await page.waitForSelector(deactivateButtonSelector);
+    await takeScreenshot(page, 'plugins page after activation.png');
 
     const activePluginsAfter = await getActivePluginsSSH();
     console.log('Active plugins after activation:', activePluginsAfter);
@@ -112,10 +169,11 @@ async function takeScreenshot(page, screenshotName) {
     assert(activatedPlugin, `The plugin "${pluginName}" was not activated`);
 
     // Save video recording to the project directory
-    const video = await context.newVideo();
-    if (video) {
-      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(await video.path()));
-      fs.copyFileSync(await video.path(), localVideoPath);
+    const videoFilePath = path.join('/app/videos/', `${context._id}.webm`);
+
+    if (fs.existsSync(videoFilePath)) {
+      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(videoFilePath));
+      fs.copyFileSync(videoFilePath, localVideoPath);
       console.log(`Video saved to: ${localVideoPath}`);
     }
 
