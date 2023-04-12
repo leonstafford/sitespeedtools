@@ -48,6 +48,7 @@ services:
     build: ./playwright
     depends_on:
       - wordpress
+      - wpcli
     environment:
       WORDPRESS_URL: "http://wordpress:80"
       WORDPRESS_TITLE: 'Test Site'
@@ -55,6 +56,10 @@ services:
       WORDPRESS_ADMIN_PASSWORD: 'MySbXoHchVqBaxJACYc2Uin59KzXfb'
       WORDPRESS_ADMIN_EMAIL: 'test@example.com'
       PLUGIN_NAME: "sitespeedtools"
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
     volumes:
       - ./videos:/app/videos
       - ./screenshots:/app/screenshots

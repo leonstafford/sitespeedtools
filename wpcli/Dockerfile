@@ -2,8 +2,8 @@ FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -qq && \
-    apt-get install -yqq tzdata && \
+RUN apt-get update && \
+    apt-get install -y php php-mysql php-curl php-gd php-intl php-mbstring php-xml php-xmlrpc && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -49,9 +49,11 @@ ADD ./conf/sshd_config /etc/ssh/sshd_config
 
 EXPOSE 22 80
 
-# we need to run both sshd and the WP image's built-in CMD ["apache2-foreground"]
-CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config"]
-# /usr/sbin/sshd -D -e -f /etc/ssh/sshd_config &
+# Copy the script into the container
+COPY override-wp-config.sh /override-wp-config.sh
 
-# CMD ["/run-sshd-and-apache2.sh"]
-# CMD ["/usr/bin/supervisord"]
+# Make the script executable
+RUN chmod +x /override-wp-config.sh
+
+# Update the CMD to run the script and then execute the original CMD
+CMD /bin/bash -c "/override-wp-config.sh && /usr/sbin/sshd -D -e -f /etc/ssh/sshd_config"

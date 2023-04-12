@@ -3,22 +3,21 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const axios = require('axios');
 const Client = require('ssh2').Client;
 
 const sshConn = new Client();
 
-sshConn.on('ready', () => {
+sshConn.on('ready', async () => {
   console.log('SSH connection established');
   
-  sshConn.exec('wp --allow-root plugin list', (err, stream) => {
+  // Print all environment variables
+  sshConn.exec('printenv', (err, stream) => {
     if (err) throw err;
     
     stream.on('close', (code, signal) => {
-      console.log('wp plugin list command exited with code', code);
-      sshConn.end();
+      console.log('printenv command exited with code', code);
     }).on('data', (data) => {
-      console.log('stdout:', data.toString());
+      console.log('Environment variables:', data.toString());
     }).stderr.on('data', (data) => {
       console.log('stderr:', data.toString());
     });
@@ -27,46 +26,39 @@ sshConn.on('ready', () => {
 
 
 sshConn.connect({
-  host: 'wordpress',
+  // TODO: move SSH dets to env vars
+  host: 'wpcli',
   port: 22,
   username: 'root',
-  password: 'rootpassword'
+  password: 'ubuntu'
 });
 
-async function getActivePlugins() {
-  try {
-    const apiUser = process.env.WORDPRESS_ADMIN_USER;
-    const apiPassword = process.env.WORDPRESS_ADMIN_PASSWORD;
-    // const response = await axios.get('http://wordpress/wp-json/wp/v2/plugins?status=active', {
-    const response = await axios.get('http://wordpress/wp-json/wp/v2/users/me', {
-      auth: {
-        username: apiUser,
-        password: apiPassword
-      }
-    });
-    const activePlugins = response.data;
-    console.log('RESPONSEDATA');
-    console.log(activePlugins);
-    return activePlugins;
-  } catch (error) {
-    console.error(error);
-    throw new Error('Failed to retrieve active plugins from WordPress');
-  }
-}
-
-async function runWpCliCommand(command) {
+async function getActivePluginsSSH() {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      } else if (stderr) {
-        reject(stderr);
+    const cmd = `wp --allow-root --path=/var/www/html plugin list --status=active --format=json`;
+    sshConn.exec(cmd, (err, stream) => {
+      if (err) {
+        reject(err);
       } else {
-        resolve(stdout);
+        let output = '';
+        stream.on('data', (data) => {
+          output += data.toString();
+        }).on('end', () => {
+          try {
+            const activePlugins = JSON.parse(output);
+            resolve(activePlugins);
+          } catch (error) {
+            reject(error);
+          }
+        }).stderr.on('data', (data) => {
+          reject(new Error(`Error running WP CLI command: ${data.toString()}`));
+        });
       }
     });
   });
 }
+
+
 
 async function takeScreenshot(page, screenshotName) {
   const screenshotPath = `/app/screenshots/${screenshotName}`;
@@ -75,9 +67,9 @@ async function takeScreenshot(page, screenshotName) {
 }
 
 (async () => {
- let browser;
- let context;
- try {
+  let browser;
+  let context;
+  try {
     browser = await chromium.launch();
     context = await browser.newContext({
       recordVideo: {
@@ -105,21 +97,19 @@ async function takeScreenshot(page, screenshotName) {
     await page.waitForSelector('#wpadminbar');
 
     await page.goto(`${wordpressUrl}/wp-admin/plugins.php`);
-    // const pluginRowSelector = `tr[data-slug="${pluginName}"]`;
-    // await page.waitForSelector(pluginRowSelector);
 
-    // get active plugins from WP container's Rest API
-    const activePlugins = await getActivePlugins();
-    console.log('Active plugins:', activePlugins);
+    // Get active plugins via wp-cli using ssh2
+    const activePluginsBefore = await getActivePluginsSSH();
+    console.log('Active plugins before activation:', activePluginsBefore);
 
-    // const activateButtonSelector = `${pluginRowSelector} a[href*="action=activate"]`;
     const activateButtonSelector = `#activate-${pluginName}`;
     await page.click(activateButtonSelector);
-    // await page.waitForSelector(`${pluginRowSelector}.active`);
 
-    const deactivateButtonSelector = `#deactivate-${pluginName}`;
-    await page.waitForSelector(deactivateButtonSelector);
+    const activePluginsAfter = await getActivePluginsSSH();
+    console.log('Active plugins after activation:', activePluginsAfter);
 
+    const activatedPlugin = activePluginsAfter.find(plugin => plugin.name === pluginName);
+    assert(activatedPlugin, `The plugin "${pluginName}" was not activated`);
 
     // Save video recording to the project directory
     const video = await context.newVideo();

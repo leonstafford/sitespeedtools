@@ -70,10 +70,11 @@ async function takeScreenshot(page, screenshotName) {
     await page.waitForSelector('table.install-success');
 
     // Save video recording to the project directory
-    const video = await context.newVideo();
-    if (video) {
-      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(await video.path()));
-      fs.copyFileSync(await video.path(), localVideoPath);
+    const videoFilePath = path.join('/app/videos/', `${context._id}.webm`);
+
+    if (fs.existsSync(videoFilePath)) {
+      const localVideoPath = path.join(__dirname, '..', 'videos', path.basename(videoFilePath));
+      fs.copyFileSync(videoFilePath, localVideoPath);
       console.log(`Video saved to: ${localVideoPath}`);
     }
 
