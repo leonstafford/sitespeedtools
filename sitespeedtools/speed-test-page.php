@@ -5,7 +5,8 @@ function sst_speed_test_page() {
     delete_transient( 'sst_api_error_message' );
     ?>
     <div class="wrap">
-        <h1>Site Speed Tools - Speed Test</h1>
+        <h1>Site Speed Tools</h1>
+        <h2>Speed Test</h2>
          <?php
         if ($api_error) {
             echo '<div class="notice notice-error"><p>' . $api_error . '</p></div>';
