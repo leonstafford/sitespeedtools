@@ -55,14 +55,13 @@ function sst_settings_init(  ) {
 }
 
 function sst_render_field($args) {
-    $options = get_option('sst_settings');
+    $options = get_option('sst_settings', []);
     $id = $args['id'];
     $type = $args['type'];
-
     if ($type === 'checkbox') {
-        echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, $options[$id], false) . ">";
+        echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, isset($options[$id]) ? $options[$id] : 0, false) . ">";
     } else {
-        echo "<input type='$type' id='$id' name='sst_settings[$id]' value='" . esc_attr($options[$id]) . "'>";
+        echo "<input type='$type' id='$id' name='sst_settings[$id]' value='" . esc_attr(isset($options[$id]) ? $options[$id] : '') . "'>";
     }
 }
 

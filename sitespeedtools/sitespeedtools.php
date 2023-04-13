@@ -21,6 +21,7 @@ require_once plugin_dir_path( __FILE__ ) . 'speed-test-page.php';
 
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
+add_action( 'admin_post_sst_submit', 'sst_submit' );
 
 function sst_add_admin_menu() {
     add_menu_page(
@@ -49,11 +50,15 @@ function sst_add_admin_menu() {
     );
 }
 
-
-add_action( 'admin_post_sst_submit', 'sst_submit' );
-
 function sst_submit() {
-    $options = get_option( 'sst_settings' );
+    $options = get_option('sst_settings');
+
+     if (empty($options['sst_api_key'])) {
+        set_transient('sst_api_error_message', 'API key is not set.', 60);
+        wp_redirect(admin_url('admin.php?page=site_speed_tools_speed_test'));
+        exit;
+    }
+
     $api_key = $options['sst_api_key'];
     $site_info = sst_get_site_info();
 
@@ -65,7 +70,7 @@ function sst_submit() {
         $api_endpoint = 'https://api.sitespeedtools.com/api/v1/wordpress';
     }
 
-    $response = wp_remote_post( $api_endpoint, array(
+    $response = wp_remote_request( $api_endpoint, array(
         'method' => 'POST',
         'timeout' => 45,
         'redirection' => 5,
@@ -76,6 +81,9 @@ function sst_submit() {
         'cookies' => array()
         )
     );
+
+    error_log('response:');
+    error_log($response);
 
     if ( is_wp_error( $response ) ) {
         $error_message = $response->get_error_message();
