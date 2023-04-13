@@ -83,25 +83,49 @@ function sst_render_field($args) {
     $type = $args['type'];
 
     if ($type === 'checkbox') {
-        echo "<input type='checkbox' name='sst_settings[$id]' value='1' " . checked(1, $options[$id], false) . ">";
+        echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, $options[$id], false) . ">";
     } else {
-        echo "<input type='$type' name='sst_settings[$id]' value='" . esc_attr($options[$id]) . "'>";
+        echo "<input type='$type' id='$id' name='sst_settings[$id]' value='" . esc_attr($options[$id]) . "'>";
     }
 }
 
-function sst_options_page(  ) { 
+function sst_options_page() {
     ?>
     <form action='options.php' method='post'>
         <?php
-        settings_fields( 'pluginPage' );
-        do_settings_sections( 'pluginPage' );
+        settings_fields('pluginPage');
+        do_settings_sections('pluginPage');
         submit_button();
         ?>
     </form>
-
-    <form action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post">
-        <input type="hidden" name="action" value="sst_submit">
-        <input type="submit" value="Get site speed reports">
+    <script>
+        jQuery(document).ready(function($) {
+            function updateFieldVisibility() {
+                const overrideUrlCheckbox = $('#sst_override_url_checkbox');
+                const basicAuthCheckbox = $('#sst_basic_auth_checkbox');
+                
+                if (overrideUrlCheckbox.is(':checked')) {
+                    $('#sst_override_url_text').closest('tr').show();
+                } else {
+                    $('#sst_override_url_text').closest('tr').hide();
+                }
+                
+                if (basicAuthCheckbox.is(':checked')) {
+                    $('#sst_basic_auth_user, #sst_basic_auth_password').closest('tr').show();
+                } else {
+                    $('#sst_basic_auth_user, #sst_basic_auth_password').closest('tr').hide();
+                }
+            }
+            
+            $('#sst_override_url_checkbox, #sst_basic_auth_checkbox').on('change', updateFieldVisibility);
+            updateFieldVisibility();
+        });
+    </script>
+    <style>
+        .sst-hidden-field {
+            display: none;
+        }
+    </style>
     <?php
 }
 
