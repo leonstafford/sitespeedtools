@@ -27,7 +27,7 @@ function sst_settings_init(  ) {
     register_setting( 'pluginPage', 'sst_settings' );
     add_settings_section(
         'sst_pluginPage_section', 
-        __( 'Site Speed Tools', 'wordpress' ), 
+        __( 'Settings', 'wordpress' ), 
         'sst_settings_section_callback', 
         'pluginPage'
     );
@@ -35,7 +35,7 @@ function sst_settings_init(  ) {
     $settings_fields = [
         [
             'id' => 'sst_api_key',
-            'title' => __('Site Speed Tools API Key', 'wordpress'),
+            'title' => __('API Key', 'wordpress'),
             'type' => 'text'
         ],
         [
@@ -92,6 +92,7 @@ function sst_render_field($args) {
 function sst_options_page() {
     ?>
     <form action='options.php' method='post'>
+        <h2>Site Speed Tools</h2>
         <?php
         settings_fields('pluginPage');
         do_settings_sections('pluginPage');
@@ -130,7 +131,7 @@ function sst_options_page() {
 }
 
 function sst_settings_section_callback(  ) { 
-    echo __( 'Enter your Site Speed Tools API Key below:', 'wordpress' );
+    echo __( 'Enter your Site Speed Tools API Key and optional settings below:', 'wordpress' );
 }
 
 add_action( 'admin_post_sst_submit', 'sst_submit' );
