@@ -82,11 +82,9 @@ function sst_submit() {
         )
     );
 
-    error_log('response:');
-    error_log($response);
-
     if ( is_wp_error( $response ) ) {
         $error_message = $response->get_error_message();
+        error_log($error_message);
         set_transient( 'sst_api_error_message', $error_message, 60 );
         wp_redirect( admin_url( 'admin.php?page=site_speed_tools_speed_test' ) );
         exit;

@@ -1,17 +1,14 @@
 <?php
 
 function sst_speed_test_page() {
-    $api_error = get_transient( 'sst_api_error' );
-    delete_transient( 'sst_api_error' );
+    $api_error = get_transient( 'sst_api_error_message' );
+    delete_transient( 'sst_api_error_message' );
     ?>
     <div class="wrap">
         <h1>Site Speed Tools - Speed Test</h1>
          <?php
         if ($api_error) {
-            $error_message = get_transient('sst_api_error_message');
-            if ($error_message) {
-                echo '<div class="notice notice-error"><p>' . $error_message . '</p></div>';
-            }
+            echo '<div class="notice notice-error"><p>' . $api_error . '</p></div>';
         }
         ?>
         <p>
