@@ -21,8 +21,6 @@ function sst_speed_test_page() {
         </form>
 
         <h1>Results</h2>
-        <!-- make dummy data for now -->
-        <!-- table of speed test results data with these table columns: Time | Status | Scanned URLs | Score | Issues Detect -->
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
@@ -58,13 +56,25 @@ function sst_speed_test_page() {
             </tbody>
         </table>
 
-        <!-- add section to show last time data was polled from API, along with WordPress' loading indicator, set to greyed out while inactive -->
         <div class="sstools-last-poll">
-            <p>Last poll: <span id="sstools-last-poll-time">2019-01-01 12:00:00</span></p>
-            <div id="sstools-loading-indicator" class="loading-indicator"></div>
+            <p>Last poll: <span id="sstools-last-poll-time">2019-01-01 12:00:00</span>
+            <div id="sstools-loading-indicator" class="wp-loading-indicator"></div>
+            </p>
         </div>
 
-        <!-- store API key in hidden input field on page -->
+        <style>
+            .wp-loading-indicator {
+                width: 16px;
+                height: 16px;
+                background-image: url('<?php echo admin_url('images/loading.gif'); ?>');
+                background-repeat: no-repeat;
+                background-position: center;
+                display: none;
+                vertical-align: middle;
+                margin-left: 10px;
+            }
+        </style>
+
         <input type="hidden" id="sst-api-key" value="<?php echo get_option('sst_api_key'); ?>">
         <input type="hidden" id="sst-uri" value="<?php echo get_option('sst_uri'); ?>">
         <input type="hidden" id="sst-url-override" value="<?php echo get_option('sst_url_override'); ?>">
@@ -80,33 +90,28 @@ function sst_speed_test_page() {
 
         <script>
             function pollApi() {
-                // get API key, URI, and URL override values from hidden input fields on this page
+                jQuery('#sstools-loading-indicator').css('visibility', 'visible');
+                jQuery('#sstools-loading-indicator').css('display', 'block');
+
                 const sstools_site_settings = {
                     api_key: jQuery('#sst-api-key').val(),
                     uri: jQuery('#sst-uri').val(),
                     url_override: jQuery('#sst-url-override').val()
                 };
                 
-                // last date/time value from table data
                 sstools_site_settings.last_time = jQuery('table.wp-list-table tbody tr:last-child td.column-time').text();
-                // if no data in table, set to 0
                 if (sstools_site_settings.last_time === '') {
                     sstools_site_settings.last_time = 0;
                 }
 
-                // make API request to get speed test results
                 const API_ENDPOINT = 'https://api.sitespeedtools.com/v1/speed-test-results';
-                // do the API request
                 jQuery.ajax({
                     url: API_ENDPOINT,
                     type: 'GET',
                     data: sstools_site_settings,
                     success: function(data) {
-                        // if data is returned, update table data
                         if (data) {
-                            // loop through data and add to table
                             for (let i = 0; i < data.length; i++) {
-                                // add new row to table
                                 jQuery('table.wp-list-table tbody').append(
                                     '<tr>' +
                                         '<td class="column-time column-primary" data-colname="Time">' + data[i].time + '</td>' +
@@ -120,19 +125,20 @@ function sst_speed_test_page() {
                         }
                     },
                     error: function(error) {
-                        // if error, display error message
                         console.log(error);
+                    },
+                    complete: function() {
+                        jQuery('#sstools-loading-indicator').css('visibility', 'hidden');
+                        jQuery('#sstools-last-poll-time').text(new Date().toLocaleString());
                     }
                 });
             }
 
             jQuery(document).ready(function() {
-                // Call the pollApi function on page load
                  pollApi();
-                // Set an interval to call the pollApi function every 5 seconds
                 setInterval(function() {
                     pollApi();
-                }, 5000); // 5000 milliseconds = 5 seconds
+                }, 5000);
             });
         </script>
 
