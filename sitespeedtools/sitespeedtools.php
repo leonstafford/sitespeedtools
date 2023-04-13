@@ -16,6 +16,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+require_once plugin_dir_path( __FILE__ ) . 'settings-page.php';
+require_once plugin_dir_path( __FILE__ ) . 'speed-test-page.php';
+
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
 
@@ -46,131 +49,6 @@ function sst_add_admin_menu() {
     );
 }
 
-function sst_settings_init(  ) { 
-    register_setting( 'pluginPage', 'sst_settings' );
-    add_settings_section(
-        'sst_pluginPage_section', 
-        __( 'Settings', 'wordpress' ), 
-        'sst_settings_section_callback', 
-        'pluginPage'
-    );
-
-    $settings_fields = [
-        [
-            'id' => 'sst_api_key',
-            'title' => __('API Key', 'wordpress'),
-            'type' => 'text'
-        ],
-        [
-            'id' => 'sst_override_url_checkbox',
-            'title' => __('Override site URL', 'wordpress'),
-            'type' => 'checkbox'
-        ],
-        [
-            'id' => 'sst_override_url_text',
-            'title' => __('Override URL', 'wordpress'),
-            'type' => 'text'
-        ],
-        [
-            'id' => 'sst_basic_auth_checkbox',
-            'title' => __('Use basic auth', 'wordpress'),
-            'type' => 'checkbox'
-        ],
-        [
-            'id' => 'sst_basic_auth_user',
-            'title' => __('Basic Auth User', 'wordpress'),
-            'type' => 'text'
-        ],
-        [
-            'id' => 'sst_basic_auth_password',
-            'title' => __('Basic Auth Password', 'wordpress'),
-            'type' => 'text'
-        ]
-    ];
-
-   array_map(function ($field) {
-        add_settings_field(
-            $field['id'],
-            $field['title'],
-            'sst_render_field',
-            'pluginPage',
-            'sst_pluginPage_section',
-            ['id' => $field['id'], 'type' => $field['type']]
-        );
-    }, $settings_fields);
-}
-
-function sst_render_field($args) {
-    $options = get_option('sst_settings');
-    $id = $args['id'];
-    $type = $args['type'];
-
-    if ($type === 'checkbox') {
-        echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, $options[$id], false) . ">";
-    } else {
-        echo "<input type='$type' id='$id' name='sst_settings[$id]' value='" . esc_attr($options[$id]) . "'>";
-    }
-}
-
-function sst_speed_test_page() {
-    ?>
-    <div class="wrap">
-        <h1>Site Speed Tools - Speed Test</h1>
-        <p>
-            Use the Site Speed Tools Speed Test to analyze and fix the most critical issues slowing down your WordPress site.
-        </p>
-        <form action="<?php echo admin_url('admin-post.php'); ?>" method="post">
-            <input type="hidden" name="action" value="sst_submit">
-            <?php submit_button('Run Speed Test'); ?>
-        </form>
-    </div>
-    <?php
-}
-
-function sst_options_page() {
-    ?>
-    <form action='options.php' method='post'>
-        <h2>Site Speed Tools</h2>
-        <?php
-        settings_fields('pluginPage');
-        do_settings_sections('pluginPage');
-        submit_button();
-        ?>
-    </form>
-    <script>
-        jQuery(document).ready(function($) {
-            function updateFieldVisibility() {
-                const overrideUrlCheckbox = $('#sst_override_url_checkbox');
-                const basicAuthCheckbox = $('#sst_basic_auth_checkbox');
-                
-                if (overrideUrlCheckbox.is(':checked')) {
-                    $('#sst_override_url_text').closest('tr').show();
-                } else {
-                    $('#sst_override_url_text').closest('tr').hide();
-                }
-                
-                if (basicAuthCheckbox.is(':checked')) {
-                    $('#sst_basic_auth_user, #sst_basic_auth_password').closest('tr').show();
-                } else {
-                    $('#sst_basic_auth_user, #sst_basic_auth_password').closest('tr').hide();
-                }
-            }
-            
-            $('#sst_override_url_checkbox, #sst_basic_auth_checkbox').on('change', updateFieldVisibility);
-            updateFieldVisibility();
-        });
-    </script>
-    <style>
-        .sst-hidden-field {
-            display: none;
-        }
-    </style>
-    <?php
-}
-
-function sst_settings_section_callback(  ) { 
-    echo __( 'Enter your Site Speed Tools API Key and optional settings below:', 'wordpress' );
-}
 
 add_action( 'admin_post_sst_submit', 'sst_submit' );
 
@@ -179,7 +57,6 @@ function sst_submit() {
     $api_key = $options['sst_api_key'];
     $site_info = sst_get_site_info();
 
-    // set SST_DEVELOPMENT_MODE to true to send site info to API endpoint testing server
     define( 'SST_DEVELOPMENT_MODE', true );
 
     if ( defined( 'SST_DEVELOPMENT_MODE' ) && SST_DEVELOPMENT_MODE ) {
@@ -202,13 +79,14 @@ function sst_submit() {
 
     if ( is_wp_error( $response ) ) {
         $error_message = $response->get_error_message();
-        error_log( 'Site Speed Tools API error: ' . $error_message );
+        set_transient( 'sst_api_error_message', $error_message, 60 );
+        wp_redirect( admin_url( 'admin.php?page=site_speed_tools_speed_test' ) );
+        exit;
     } else {
         error_log( 'Site Speed Tools API response: ' . $response['body'] );
+        wp_redirect( admin_url( 'admin.php?page=site_speed_tools_speed_test' ) );
+        exit;
     }
-
-    wp_redirect( admin_url( 'admin.php?page=site_speed_tools' ) );
-    exit;
 }
 
 function sst_get_site_info(
