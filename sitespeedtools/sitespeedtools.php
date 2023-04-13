@@ -16,7 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// add plugin settings page with menu item using lightning icon
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
 
@@ -32,23 +31,64 @@ function sst_settings_init(  ) {
         'sst_settings_section_callback', 
         'pluginPage'
     );
-    add_settings_field( 
-        'sst_text_field_0', 
-        __( 'Site Speed Tools API Key', 'wordpress' ), 
-        'sst_text_field_0_render', 
-        'pluginPage', 
-        'sst_pluginPage_section' 
-    );
+
+    $settings_fields = [
+        [
+            'id' => 'sst_api_key',
+            'title' => __('Site Speed Tools API Key', 'wordpress'),
+            'type' => 'text'
+        ],
+        [
+            'id' => 'sst_override_url_checkbox',
+            'title' => __('Override site URL', 'wordpress'),
+            'type' => 'checkbox'
+        ],
+        [
+            'id' => 'sst_override_url_text',
+            'title' => __('Override URL', 'wordpress'),
+            'type' => 'text'
+        ],
+        [
+            'id' => 'sst_basic_auth_checkbox',
+            'title' => __('Use basic auth', 'wordpress'),
+            'type' => 'checkbox'
+        ],
+        [
+            'id' => 'sst_basic_auth_user',
+            'title' => __('Basic Auth User', 'wordpress'),
+            'type' => 'text'
+        ],
+        [
+            'id' => 'sst_basic_auth_password',
+            'title' => __('Basic Auth Password', 'wordpress'),
+            'type' => 'text'
+        ]
+    ];
+
+   array_map(function ($field) {
+        add_settings_field(
+            $field['id'],
+            $field['title'],
+            'sst_render_field',
+            'pluginPage',
+            'sst_pluginPage_section',
+            ['id' => $field['id'], 'type' => $field['type']]
+        );
+    }, $settings_fields);
 }
 
-function sst_text_field_0_render(  ) { 
-    $options = get_option( 'sst_settings' );
-    ?>
-    <input type='text' name='sst_settings[sst_text_field_0]' value='<?php echo $options['sst_text_field_0']; ?>'>
-    <?php
+function sst_render_field($args) {
+    $options = get_option('sst_settings');
+    $id = $args['id'];
+    $type = $args['type'];
+
+    if ($type === 'checkbox') {
+        echo "<input type='checkbox' name='sst_settings[$id]' value='1' " . checked(1, $options[$id], false) . ">";
+    } else {
+        echo "<input type='$type' name='sst_settings[$id]' value='" . esc_attr($options[$id]) . "'>";
+    }
 }
 
-// Q which url should I access the settings page at?
 function sst_options_page(  ) { 
     ?>
     <form action='options.php' method='post'>
@@ -59,7 +99,6 @@ function sst_options_page(  ) {
         ?>
     </form>
 
-    <!-- button on plugin settings page to submit WP site info as JSON to Site Speed Tools API -->
     <form action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post">
         <input type="hidden" name="action" value="sst_submit">
         <input type="submit" value="Get site speed reports">
@@ -70,26 +109,22 @@ function sst_settings_section_callback(  ) {
     echo __( 'Enter your Site Speed Tools API Key below:', 'wordpress' );
 }
 
-// button on plugin settings page to submit WP site info as JSON to Site Speed Tools API
 add_action( 'admin_post_sst_submit', 'sst_submit' );
 
-// the sst_submit function
 function sst_submit() {
-    // get the API key from the settings page
     $options = get_option( 'sst_settings' );
-    $api_key = $options['sst_text_field_0'];
-    // get the site info
+    $api_key = $options['sst_api_key'];
     $site_info = sst_get_site_info();
 
-    // if in SST_DEVELOPMENT_MODE is set, send to API endpoint testing server
+    // set SST_DEVELOPMENT_MODE to true to send site info to API endpoint testing server
+    define( 'SST_DEVELOPMENT_MODE', true );
+
     if ( defined( 'SST_DEVELOPMENT_MODE' ) && SST_DEVELOPMENT_MODE ) {
-        // send request to httpbin service
-        $api_endpoint = 'https://httpbin.org/post';
+        $api_endpoint = 'https://apidev.sitespeedtools.com/api/v1/wordpress';
     } else {
-        $api_endpoint = 'https://www.sitespeedtools.com/api/v1/wordpress';
+        $api_endpoint = 'https://api.sitespeedtools.com/api/v1/wordpress';
     }
 
-    // send the site info to the API
     $response = wp_remote_post( $api_endpoint, array(
         'method' => 'POST',
         'timeout' => 45,
@@ -102,7 +137,6 @@ function sst_submit() {
         )
     );
 
-    // log the response
     if ( is_wp_error( $response ) ) {
         $error_message = $response->get_error_message();
         error_log( 'Site Speed Tools API error: ' . $error_message );
@@ -110,22 +144,10 @@ function sst_submit() {
         error_log( 'Site Speed Tools API response: ' . $response['body'] );
     }
 
-    // redirect back to the settings page
     wp_redirect( admin_url( 'admin.php?page=site_speed_tools' ) );
     exit;
 }
 
-// the sst_get_site_info function which gets the WP site info and returns it as JSON
-// site info includes the following:
-// - site url
-// - site title
-// - site description
-// - site language
-// - all plugins, noting which are active and which are not
-// - all themes, noting which are active and which are not
-// - permalinks structure
-// - number of users
-// - number of posts, pages, comments, with totals per post type
 function sst_get_site_info(
     $site_url = '',
     $site_title = '',
@@ -139,29 +161,17 @@ function sst_get_site_info(
     $pages = array(),
     $comments = array()
 ) {
-    // get the site url
     $site_url = get_site_url();
-    // get the site title
     $site_title = get_bloginfo( 'name' );
-    // get the site description
     $site_description = get_bloginfo( 'description' );
-    // get the site language
     $site_language = get_bloginfo( 'language' );
-    // get the plugins
     $plugins = get_plugins();
-    // get the themes
     $themes = wp_get_themes();
-    // get the permalinks structure
     $permalinks_structure = get_option( 'permalink_structure' );
-    // get the users
     $users = get_users();
-    // get the posts
     $posts = get_posts();
-    // get the pages
     $pages = get_pages();
-    // get the comments
     $comments = get_comments();
-    // return the site info as JSON
     return json_encode( array(
         'site_url' => $site_url,
         'site_title' => $site_title,
