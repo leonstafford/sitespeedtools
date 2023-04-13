@@ -19,8 +19,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
 
-function sst_add_admin_menu(  ) { 
-    add_menu_page( 'Site Speed Tools', 'Site Speed Tools', 'manage_options', 'site_speed_tools', 'sst_options_page', 'dashicons-performance' );
+function sst_add_admin_menu() {
+    add_menu_page(
+        'Site Speed Tools',
+        'Site Speed Tools',
+        'manage_options',
+        'site_speed_tools_speed_test',
+        'sst_speed_test_page',
+        'dashicons-performance'
+    );
+    add_submenu_page(
+        'site_speed_tools_speed_test',
+        'Speed Test',
+        'Speed Test',
+        'manage_options',
+        'site_speed_tools_speed_test',
+        'sst_speed_test_page'
+    );
+    add_submenu_page(
+        'site_speed_tools_speed_test',
+        'Settings',
+        'Settings',
+        'manage_options',
+        'site_speed_tools_settings',
+        'sst_options_page'
+    );
 }
 
 function sst_settings_init(  ) { 
@@ -87,6 +110,21 @@ function sst_render_field($args) {
     } else {
         echo "<input type='$type' id='$id' name='sst_settings[$id]' value='" . esc_attr($options[$id]) . "'>";
     }
+}
+
+function sst_speed_test_page() {
+    ?>
+    <div class="wrap">
+        <h1>Site Speed Tools - Speed Test</h1>
+        <p>
+            Use the Site Speed Tools Speed Test to analyze and fix the most critical issues slowing down your WordPress site.
+        </p>
+        <form action="<?php echo admin_url('admin-post.php'); ?>" method="post">
+            <input type="hidden" name="action" value="sst_submit">
+            <?php submit_button('Run Speed Test'); ?>
+        </form>
+    </div>
+    <?php
 }
 
 function sst_options_page() {
