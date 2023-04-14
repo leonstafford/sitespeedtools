@@ -62,7 +62,7 @@ function sst_submit() {
     $api_key = $options['sst_api_key'];
     $site_info = sst_get_site_info();
 
-    $api_endpoint = 'http://apitest.sitespeedtools.com/api/v1/wordpress';
+    $api_endpoint = 'http://apitest.sitespeedtools.com/v1/wordpress';
 
     $response = wp_remote_request( $api_endpoint, array(
         'method' => 'POST',

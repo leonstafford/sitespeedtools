@@ -77,8 +77,28 @@ function sst_speed_test_page() {
         </style>
 
         <input type="hidden" id="sst-api-key" value="<?php echo $options['sst_api_key'] ?? ''; ?>">
-        <input type="hidden" id="sst-uri" value="<?php echo $options['sst_uri'] ?? ''; ?>">
-        <input type="hidden" id="sst-url-override" value="<?php echo $options['sst_url_override'] ?? ''; ?>">
+
+        <?php
+        
+            // get WordPress site URL
+            $site_url = get_site_url();
+
+            error_log('site_url: ' . $site_url);
+
+            // get WordPress site URL without protocol
+            $site_url = preg_replace('#^https?://#', '', $site_url);
+
+            $url_override = $options['sst_url_override'] ?? '';
+
+            // if the site URL is not the same as the URL override, then use the URL override
+            if ($url_override && $site_url_no_protocol !== $url_override) {
+                $site_url = $url_override;
+            }
+
+        ?>
+
+        
+        <input type="hidden" id="sst-uri" value="<?php echo $site_url; ?>">
 
         <!-- example JSON data to create the table above 
         {
@@ -97,7 +117,6 @@ function sst_speed_test_page() {
                 const sstools_site_settings = {
                     api_key: jQuery('#sst-api-key').val(),
                     uri: jQuery('#sst-uri').val(),
-                    url_override: jQuery('#sst-url-override').val()
                 };
                 
                 sstools_site_settings.last_time = jQuery('table.wp-list-table tbody tr:last-child td.column-time').text();
