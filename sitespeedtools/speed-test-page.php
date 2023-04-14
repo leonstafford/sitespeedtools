@@ -2,6 +2,7 @@
 
 function sst_speed_test_page() {
     $api_error = get_transient( 'sst_api_error_message' );
+    $options = get_option('sst_settings', []);
     delete_transient( 'sst_api_error_message' );
     ?>
     <div class="wrap">
@@ -75,9 +76,9 @@ function sst_speed_test_page() {
             }
         </style>
 
-        <input type="hidden" id="sst-api-key" value="<?php echo get_option('sst_api_key'); ?>">
-        <input type="hidden" id="sst-uri" value="<?php echo get_option('sst_uri'); ?>">
-        <input type="hidden" id="sst-url-override" value="<?php echo get_option('sst_url_override'); ?>">
+        <input type="hidden" id="sst-api-key" value="<?php echo $options['sst_api_key'] ?? ''; ?>">
+        <input type="hidden" id="sst-uri" value="<?php echo $options['sst_uri'] ?? ''; ?>">
+        <input type="hidden" id="sst-url-override" value="<?php echo $options['sst_url_override'] ?? ''; ?>">
 
         <!-- example JSON data to create the table above 
         {
@@ -104,7 +105,7 @@ function sst_speed_test_page() {
                     sstools_site_settings.last_time = 0;
                 }
 
-                const API_ENDPOINT = 'https://api.sitespeedtools.com/v1/speed-test-results';
+                const API_ENDPOINT = 'http://apitest.sitespeedtools.com/v1/speed-test-results';
                 jQuery.ajax({
                     url: API_ENDPOINT,
                     type: 'GET',

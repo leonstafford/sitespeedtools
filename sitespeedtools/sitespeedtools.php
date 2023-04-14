@@ -62,13 +62,7 @@ function sst_submit() {
     $api_key = $options['sst_api_key'];
     $site_info = sst_get_site_info();
 
-    define( 'SST_DEVELOPMENT_MODE', true );
-
-    if ( defined( 'SST_DEVELOPMENT_MODE' ) && SST_DEVELOPMENT_MODE ) {
-        $api_endpoint = 'https://apidev.sitespeedtools.com/api/v1/wordpress';
-    } else {
-        $api_endpoint = 'https://api.sitespeedtools.com/api/v1/wordpress';
-    }
+    $api_endpoint = 'http://apitest.sitespeedtools.com/api/v1/wordpress';
 
     $response = wp_remote_request( $api_endpoint, array(
         'method' => 'POST',
