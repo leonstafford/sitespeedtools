@@ -21,7 +21,19 @@ require_once plugin_dir_path( __FILE__ ) . 'speed-test-page.php';
 
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
-add_action( 'admin_post_sst_submit', 'sst_submit' );
+add_action( 'admin_post_sst_run_speed_test', 'sst_run_speed_test' );
+add_action( 'admin_sst_get_api_key', 'sst_get_api_key' );
+
+function sst_get_api_key() {
+    $options = get_option('sst_settings');
+
+    // make API call to /v1/get-api-key/:hostname using either the WP site URL or the override url
+
+
+    // if the API call fails, show notice to user on page redirect
+
+    return $options['sst_api_key'];
+}
 
 function sst_add_admin_menu() {
     add_menu_page(
@@ -50,9 +62,10 @@ function sst_add_admin_menu() {
     );
 }
 
-function sst_submit() {
+function sst_run_speed_test() {
     $options = get_option('sst_settings');
 
+    // TODO: alter behaviour to attempt to ceate API key from hostname if not set
      if (empty($options['sst_api_key'])) {
         set_transient('sst_api_error_message', 'API key is not set.', 60);
         wp_redirect(admin_url('admin.php?page=site_speed_tools_speed_test'));

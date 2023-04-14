@@ -13,7 +13,8 @@ function sst_settings_init(  ) {
         [
             'id' => 'sst_api_key',
             'title' => __('API Key', 'wordpress'),
-            'type' => 'text'
+            'type' => 'text',
+            'readonly' => true
         ],
         [
             'id' => 'sst_override_url_checkbox',
@@ -49,7 +50,7 @@ function sst_settings_init(  ) {
             'sst_render_field',
             'pluginPage',
             'sst_pluginPage_section',
-            ['id' => $field['id'], 'type' => $field['type']]
+            ['id' => $field['id'], 'type' => $field['type'], 'readonly' => $field['readonly'] ?? false]
         );
     }, $settings_fields);
 }
@@ -61,7 +62,9 @@ function sst_render_field($args) {
     if ($type === 'checkbox') {
         echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, isset($options[$id]) ? $options[$id] : 0, false) . ">";
     } else {
-        echo "<input type='$type' id='$id' name='sst_settings[$id]' value='" . esc_attr(isset($options[$id]) ? $options[$id] : '') . "'>";
+        // add readonly attribute if readonly is set to true
+        $readonly = isset($args['readonly']) && $args['readonly'] ? 'readonly' : '';
+        echo "<input type='$type' id='$id' name='sst_settings[$id]' " . $readonly . " value='" . esc_attr(isset($options[$id]) ? $options[$id] : '') . "'>";
     }
 }
 
@@ -70,6 +73,16 @@ function sst_options_page() {
     ?>
     <div class="wrap">
         <h1>Site Speed Tools</h1>
+
+        <?php
+            // if API key isn't set, show a WP notice with a Button to "Get Free API Key", which submits to sst_get_api_key()
+            if (!get_option('sst_api_key')) {
+                echo "<div class='notice notice-warning is-dismissible'><p>Site Speed Tools is not yet fully configured. <a href='" . admin_url('admin.php?page=sst-get-api-key') . "'>Generate Free API Key</a></p></div>";
+            }
+
+
+        ?>
+
         <form action='options.php' method='post'>
             <?php
             settings_fields('pluginPage');
@@ -110,5 +123,5 @@ function sst_options_page() {
 }
 
 function sst_settings_section_callback(  ) { 
-    echo __( 'Enter your Site Speed Tools API Key and optional settings below:', 'wordpress' );
+    echo __( 'Check/adjust your Site Speed Tools settings below:', 'wordpress' );
 }

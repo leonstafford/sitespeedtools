@@ -17,7 +17,7 @@ function sst_speed_test_page() {
             Use the Site Speed Tools Speed Test to analyze and fix the most critical issues slowing down your WordPress site.
         </p>
         <form action="<?php echo admin_url('admin-post.php'); ?>" method="post">
-            <input type="hidden" name="action" value="sst_submit">
+            <input type="hidden" name="action" value="sst_run_speed_test">
             <?php submit_button('Run Speed Test'); ?>
         </form>
 
