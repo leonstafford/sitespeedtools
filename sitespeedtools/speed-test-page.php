@@ -44,7 +44,7 @@ function sst_speed_test_page() {
 
         <p id="sst-max-results-shown-msg" style="display:none;">Only showing up to your 10 more recent speed tests for this site.</p>
 
-        <div class="sstools-last-poll">
+        <div id="sstools-last-poll">
             <p>Last poll: <span id="sstools-last-poll-time">2019-01-01 12:00:00</span>
             <div id="sstools-loading-indicator" class="wp-loading-indicator"></div>
             </p>
@@ -61,9 +61,11 @@ function sst_speed_test_page() {
                 vertical-align: middle;
                 margin-left: 10px;
             }
-        </style>
 
-        <input type="hidden" id="sst-api-key" value="<?php echo $options['sst_api_key'] ?? ''; ?>">
+            #sstools-last-poll {
+                display: none;
+            }
+        </style>
 
         <?php
         
@@ -83,18 +85,26 @@ function sst_speed_test_page() {
 
         ?>
         
-        <input type="hidden" id="sst-uri" value="<?php echo $site_url; ?>">
+        <input type="hidden" id="sst-site-uri" value="<?php echo $site_url; ?>">
+        <input type="hidden" id="sst-unique-token" value="<?php echo $options['sst_unique_token'] ?? ''; ?>">
+        <input type="hidden" id="sst-api-key" value="<?php echo $options['sst_api_key'] ?? ''; ?>">
 
         <script>
             function pollApi() {
+                const sstools_site_settings = {
+                    api_key: jQuery('#sst-api-key').val(),
+                    site_uri: jQuery('#sst-site-uri').val(),
+                    unique_token: jQuery('#sst-unique-token').val(),
+                };
+
+                // return early if no unique_token
+                if (!sstools_site_settings.unique_token) {
+                    return;
+                }
+
                 jQuery('#sstools-loading-indicator').css('visibility', 'visible');
                 jQuery('#sstools-loading-indicator').css('display', 'block');
 
-                const sstools_site_settings = {
-                    api_key: jQuery('#sst-api-key').val(),
-                    uri: jQuery('#sst-uri').val(),
-                };
-                
                 sstools_site_settings.last_time = jQuery('table.wp-list-table tbody tr:last-child td.column-time').attr('data-time');
                 if (sstools_site_settings.last_time === '') {
                     sstools_site_settings.last_time = 0;
@@ -138,6 +148,7 @@ function sst_speed_test_page() {
                     },
                     complete: function() {
                         jQuery('#sstools-loading-indicator').css('visibility', 'hidden');
+                        jQuery('#sstools-last-poll').css('display', 'block');
                         jQuery('#sstools-last-poll-time').text(new Date().toLocaleString());
                     }
                 });

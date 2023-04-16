@@ -87,8 +87,8 @@ function sst_run_speed_test() {
     $options = get_option('sst_settings');
 
     // TODO: alter behaviour to attempt to ceate API key from hostname if not set
-     if (empty($options['sst_api_key'])) {
-        set_transient('sst_api_error_message', 'API key is not set.', 60);
+     if (empty($options['sst_unique_token'])) {
+        set_transient('sst_api_error_message', 'Required unique token missing, please check the <a href="' . admin_url('admin.php?page=site_speed_tools_settings') . '">Settings page</a>.', 60);
         wp_redirect(admin_url('admin.php?page=site_speed_tools_speed_test'));
         exit;
     }

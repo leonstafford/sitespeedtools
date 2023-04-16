@@ -9,6 +9,8 @@ function sst_settings_init(  ) {
         'pluginPage'
     );
 
+    $site_url = get_site_url();
+
     $settings_fields = [
         [
             'id' => 'sst_privacy_policy_accepted',
@@ -17,13 +19,19 @@ function sst_settings_init(  ) {
             'description' => __('By checking this box, you\'ve agreed to the Privacy Policy and Terms of Service.', 'wordpress')
         ],
         [
-            'id' => 'sst_override_url',
-            'title' => __('Override Site URL', 'wordpress'),
+            'id' => 'sst_use_override_url',
+            'title' => __('Override Site URL?', 'wordpress'),
             'type' => 'checkbox',
-            'description' => __('Use this if the public URL for your WordPress site differs from your WP Site URL.', 'wordpress')
+            'description' => __('Use this if the public URL for your WordPress site differs from your WP Site URL (' . $site_url . ').', 'wordpress')
         ],
         [
-            'id' => 'sst_basic_auth',
+            'id' => 'sst_override_url',
+            'title' => __('Site URL', 'wordpress'),
+            'type' => 'text',
+            'description' => __('The public URL used to access this website.', 'wordpress')
+        ],
+        [
+            'id' => 'sst_use_basic_auth',
             'title' => __('Use Basic Auth', 'wordpress'),
             'type' => 'checkbox',
             'description' => __('Use this if you want to test a site protected by HTTP Basic Auth.', 'wordpress')
@@ -134,13 +142,13 @@ function sst_options_page() {
     <script>
         jQuery(document).ready(function($) {
             function updateFieldVisibility() {
-                const overrideUrlCheckbox = $('#sst_override_url_checkbox');
-                const basicAuthCheckbox = $('#sst_basic_auth_checkbox');
+                const overrideUrlCheckbox = $('#sst_use_override_url');
+                const basicAuthCheckbox = $('#sst_use_basic_auth');
                 
                 if (overrideUrlCheckbox.is(':checked')) {
-                    $('#sst_override_url_text').closest('tr').show();
+                    $('#sst_override_url').closest('tr').show();
                 } else {
-                    $('#sst_override_url_text').closest('tr').hide();
+                    $('#sst_override_url').closest('tr').hide();
                 }
                 
                 if (basicAuthCheckbox.is(':checked')) {
@@ -150,7 +158,7 @@ function sst_options_page() {
                 }
             }
             
-            $('#sst_override_url_checkbox, #sst_basic_auth_checkbox').on('change', updateFieldVisibility);
+            $('#sst_use_override_url, #sst_use_basic_auth').on('change', updateFieldVisibility);
             updateFieldVisibility();
         });
     </script>
