@@ -12,6 +12,18 @@ services:
       MYSQL_PASSWORD: wordpress
     restart: always
 
+  pma:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: somewordpress
+      UPLOAD_LIMIT: 5000M
+    ports:
+      - "8046:80"
+    links:
+      - db:db
+
   wordpress:
     depends_on:
       - db
