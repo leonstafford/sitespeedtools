@@ -10,14 +10,9 @@ function sst_speed_test_page() {
         <h2>Speed Test</h2>
          <?php
         if ($api_error) {
-            echo '<div class="notice notice-error"><p>' . $api_error . '</p></div>';
+            echo $api_error;
         }
 
-        if (empty($options['sst_privacy_policy_accepted'])) {
-                $privacy_page_url = admin_url('admin.php?page=site_speed_tools_privacy');
-                echo "<div class='notice notice-warning is-dismissible'><p>Please review and agree to our <a href=" .
-                    $privacy_page_url . ">Privacy Policy</a> to start using Site Speed Tools</p></div>";
-        }
         ?>
         <p>
             Use the Site Speed Tools Speed Test to analyze and fix the most critical issues slowing down your WordPress site.

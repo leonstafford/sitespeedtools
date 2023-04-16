@@ -86,9 +86,17 @@ function sst_add_admin_menu() {
 function sst_run_speed_test() {
     $options = get_option('sst_settings');
 
-    // TODO: alter behaviour to attempt to ceate API key from hostname if not set
-     if (empty($options['sst_unique_token'])) {
-        set_transient('sst_api_error_message', 'Required unique token missing, please check the <a href="' . admin_url('admin.php?page=site_speed_tools_settings') . '">Settings page</a>.', 60);
+    if (empty($options['sst_privacy_policy_accepted'])) {
+        $privacy_page_url = admin_url('admin.php?page=site_speed_tools_privacy');
+        set_transient('sst_api_error_message', "<div class='notice notice-warning is-dismissible'><p>Please review and agree to our <a href='" .
+            $privacy_page_url . "'>Privacy Policy</a> to start using Site Speed Tools.</p></div>", 60);
+        wp_redirect(admin_url('admin.php?page=site_speed_tools_speed_test'));
+        exit;
+    }
+
+    if (empty($options['sst_unique_token'])) {
+        set_transient('sst_api_error_message', "<div class='notice notice-warning is-dismissible'><p>Required unique token missing, please check the <a href='" .
+            admin_url('admin.php?page=site_speed_tools_settings') . "'>Settings page</a>.</p></div>", 60);
         wp_redirect(admin_url('admin.php?page=site_speed_tools_speed_test'));
         exit;
     }
