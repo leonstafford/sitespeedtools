@@ -93,8 +93,6 @@ function sst_speed_test_page() {
 
                 // return early if no unique_token
                 if (!sstools_site_settings.unique_token || !sstools_site_settings.sst_privacy_policy_accepted) {
-                    console.log('No unique token or privacy policy accepted');
-                    console.log(sstools_site_settings);
                     return;
                 }
 
