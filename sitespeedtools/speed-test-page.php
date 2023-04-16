@@ -33,29 +33,10 @@ function sst_speed_test_page() {
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="column-time column-primary" data-colname="Time">2019-01-01 12:00:00</td>
-                    <td class="column-status" data-colname="Status">Complete</td>
-                    <td class="column-scanned-urls" data-colname="Scanned URLs">99</td>
-                    <td class="column-score" data-colname="Score">99</td>
-                    <td class="column-issues-detected" data-colname="Issues Detected">-1</td>
-                </tr>
-                <tr>
-                    <td class="column-time column-primary" data-colname="Time">2019-01-01 12:00:00</td>
-                    <td class="column-status" data-colname="Status">Complete</td>
-                    <td class="column-scanned-urls" data-colname="Scanned URLs">99</td>
-                    <td class="column-score" data-colname="Score">99</td>
-                    <td class="column-issues-detected" data-colname="Issues Detected">-1</td>
-                </tr>
-                <tr>
-                    <td class="column-time column-primary" data-colname="Time">2019-01-01 12:00:00</td>
-                    <td class="column-status" data-colname="Status">Complete</td>
-                    <td class="column-scanned-urls" data-colname="Scanned URLs">99</td>
-                    <td class="column-score" data-colname="Score">99</td>
-                    <td class="column-issues-detected" data-colname="Issues Detected">-1</td>
-                </tr>
             </tbody>
         </table>
+
+        <p id="sst-max-results-shown-msg" style="display:none;">Only showing up to your 10 more recent speed tests for this site.</p>
 
         <div class="sstools-last-poll">
             <p>Last poll: <span id="sstools-last-poll-time">2019-01-01 12:00:00</span>
@@ -80,7 +61,6 @@ function sst_speed_test_page() {
 
         <?php
         
-            // get WordPress site URL
             $site_url = get_site_url();
 
             error_log('site_url: ' . $site_url);
@@ -96,18 +76,8 @@ function sst_speed_test_page() {
             }
 
         ?>
-
         
         <input type="hidden" id="sst-uri" value="<?php echo $site_url; ?>">
-
-        <!-- example JSON data to create the table above 
-        {
-            "time": "2019-01-01 12:00:00",
-            "status": "Complete",
-            "scanned_urls": 99,
-            "score": 99,
-            "issues_detected": -1
-        } -->	
 
         <script>
             function pollApi() {
@@ -119,7 +89,7 @@ function sst_speed_test_page() {
                     uri: jQuery('#sst-uri').val(),
                 };
                 
-                sstools_site_settings.last_time = jQuery('table.wp-list-table tbody tr:last-child td.column-time').text();
+                sstools_site_settings.last_time = jQuery('table.wp-list-table tbody tr:last-child td.column-time').attr('data-time');
                 if (sstools_site_settings.last_time === '') {
                     sstools_site_settings.last_time = 0;
                 }
@@ -130,17 +100,30 @@ function sst_speed_test_page() {
                     type: 'GET',
                     data: sstools_site_settings,
                     success: function(data) {
+                        console.log(data);
+
                         if (data) {
+                            // clear out the table before adding new results
+                            jQuery('table.wp-list-table tbody').empty();
+
                             for (let i = 0; i < data.length; i++) {
-                                jQuery('table.wp-list-table tbody').append(
+                                const resultTime = new Date(data[i].time).toLocaleString();
+
+                                jQuery('table.wp-list-table tbody').prepend(
                                     '<tr>' +
-                                        '<td class="column-time column-primary" data-colname="Time">' + data[i].time + '</td>' +
+                                        '<td class="column-time column-primary" data-colname="Time" data-time="' + data[i].time + '">' + resultTime + '</td>' +
                                         '<td class="column-status" data-colname="Status">' + data[i].status + '</td>' +
                                         '<td class="column-scanned-urls" data-colname="Scanned URLs">' + data[i].scanned_urls + '</td>' +
                                         '<td class="column-score" data-colname="Score">' + data[i].score + '</td>' +
                                         '<td class="column-issues-detected" data-colname="Issues Detected">' + data[i].issues_detected + '</td>' +
                                     '</tr>'
                                 );
+                            }
+
+                            if (data.length >= 10) {
+                                jQuery('#sst-max-results-shown-msg').css('display', 'block');
+                            } else {
+                                jQuery('#sst-max-results-shown-msg').css('display', 'none');
                             }
                         }
                     },

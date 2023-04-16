@@ -11,35 +11,47 @@ function sst_settings_init(  ) {
 
     $settings_fields = [
         [
-            'id' => 'sst_api_key',
-            'title' => __('API Key', 'wordpress'),
-            'type' => 'text',
-            'readonly' => true
-        ],
-        [
             'id' => 'sst_override_url_checkbox',
-            'title' => __('Override site URL', 'wordpress'),
-            'type' => 'checkbox'
+            'title' => __('Override Site URL', 'wordpress'),
+            'type' => 'checkbox',
+            'description' => __('Use this if the public URL for your WordPress site differs from your WP Site URL.', 'wordpress')
         ],
         [
             'id' => 'sst_override_url_text',
             'title' => __('Override URL', 'wordpress'),
-            'type' => 'text'
+            'type' => 'text',
+            'description' => __('Enter the URL of the site you want to test.', 'wordpress')
         ],
         [
             'id' => 'sst_basic_auth_checkbox',
-            'title' => __('Use basic auth', 'wordpress'),
-            'type' => 'checkbox'
+            'title' => __('Use Basic Auth', 'wordpress'),
+            'type' => 'checkbox',
+            'description' => __('Use this if you want to test a site protected by HTTP Basic Auth.', 'wordpress')
         ],
         [
             'id' => 'sst_basic_auth_user',
             'title' => __('Basic Auth User', 'wordpress'),
-            'type' => 'text'
+            'type' => 'text',
+            'description' => __('Enter the username for the Basic Auth account.', 'wordpress')
         ],
         [
             'id' => 'sst_basic_auth_password',
             'title' => __('Basic Auth Password', 'wordpress'),
-            'type' => 'text'
+            'type' => 'text',
+            'description' => __('Enter the password for the Basic Auth account.', 'wordpress')
+        ],
+        [
+            'id' => 'sst_api_key',
+            'title' => __('API Key', 'wordpress'),
+            'type' => 'text',
+            'description' => __('Premium accounts can receive an API Key from <a href="https://sitespeedtools.com" target="_blank">SiteSpeedTools.com</>, enabling more features for you.', 'wordpress')
+        ],
+        [
+            'id' => 'sst_unique_token',
+            'title' => __('Unique Site Token (auto-generated)', 'wordpress'),
+            'type' => 'text',
+            'description' => __('This is a unique token generated for your site. It is used to identify your site when making API calls to SiteSpeedTools.com.', 'wordpress'),
+            'readonly' => true
         ]
     ];
 
@@ -59,6 +71,7 @@ function sst_render_field($args) {
     $options = get_option('sst_settings', []);
     $id = $args['id'];
     $type = $args['type'];
+    $description = $args['description'] ?? '';
     if ($type === 'checkbox') {
         echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, isset($options[$id]) ? $options[$id] : 0, false) . ">";
     } else {
@@ -66,6 +79,17 @@ function sst_render_field($args) {
         $readonly = isset($args['readonly']) && $args['readonly'] ? 'readonly' : '';
         echo "<input type='$type' id='$id' name='sst_settings[$id]' " . $readonly . " value='" . esc_attr(isset($options[$id]) ? $options[$id] : '') . "'>";
     }
+    echo "<p class='description'>" . $description . "</p>";
+}
+
+function sst_reset_settings() {
+    // delete all options
+    delete_option('sst_settings');
+    delete_option('sst_api_key');
+    delete_option('sst_unique_token');
+    // redirect back to settings page
+    wp_redirect(admin_url('admin.php?page=site_speed_tools_settings'));
+    exit;
 }
 
 function sst_options_page() {
@@ -87,9 +111,17 @@ function sst_options_page() {
             <?php
             settings_fields('pluginPage');
             do_settings_sections('pluginPage');
-            submit_button();
+            submit_button('Save Settings');
             ?>
         </form>
+
+        <?php // a button to "Reset Settings" which submits to sst_reset_settings() 
+            echo "<form action='" . admin_url('admin-post.php') . "' method='post'>";
+            echo "<input type='hidden' name='action' value='sst_reset_settings'>";
+            submit_button('Reset Settings', 'delete', 'submit', false);
+            echo "</form>";
+        ?>
+
     </div>
     <script>
         jQuery(document).ready(function($) {

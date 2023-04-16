@@ -22,6 +22,7 @@ require_once plugin_dir_path( __FILE__ ) . 'speed-test-page.php';
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
 add_action( 'admin_post_sst_run_speed_test', 'sst_run_speed_test' );
+add_action( 'admin_post_sst_reset_settings', 'sst_reset_settings' );
 add_action( 'admin_sst_get_api_key', 'sst_get_api_key' );
 
 function sst_get_api_key() {
