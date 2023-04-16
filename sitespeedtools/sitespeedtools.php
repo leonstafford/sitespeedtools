@@ -83,13 +83,26 @@ function sst_generate_unique_token() {
     $options = get_option('sst_settings');
     $site_uri = ( isset($options['sst_override_url']) && $options['sst_override_url'] !== '' ) ? $options['sst_override_url'] : get_site_url();
 
-    // $site_url without the protocol and url encoded
-    $site_uri = urlencode(str_replace(array('http://', 'https://'), '', $site_uri)); 
+    // $site_url url encoded
+    $site_uri = urlencode($site_uri); 
 
-    $url = 'http://apitest.sitespeedtools.com/v1/get-unique-token/' . $site_uri;
+    $temp_token = isset($options['sst_temp_token']) ? $options['sst_temp_token'] : '';
+
+    // if the temp token is not set, generate a new one using a long hash
+    if (!$temp_token) {
+        $temp_token = hash('sha256', uniqid(rand(), true));
+        $options['sst_temp_token'] = $temp_token;
+        update_option('sst_settings', $options);
+    }
+
+    $url = 'http://apitest.sitespeedtools.com/v1/get-unique-token/' . $site_uri . '/' . $options['sst_temp_token'];
     $response = wp_remote_get($url);
     $body = wp_remote_retrieve_body($response);
     $data = json_decode($body);
+
+    // log the response as JSON
+    error_log('response: ' . print_r($data, true));
+
     if (isset($data->success) && $data->success) {
         $options['sst_unique_token'] = $data->token;
         update_option('sst_settings', $options);

@@ -66,8 +66,7 @@ function sst_speed_test_page() {
         
             $site_url = get_site_url();
 
-            // get WordPress site URL without protocol and url encoded
-            $site_url = urlencode(str_replace(array('http://', 'https://'), '', $site_url)); 
+            $site_url = urlencode($site_url); 
 
             $url_override = $options['sst_url_override'] ?? '';
 
@@ -81,6 +80,7 @@ function sst_speed_test_page() {
         <input type="hidden" id="sst-site-uri" value="<?php echo $site_url; ?>">
         <input type="hidden" id="sst-unique-token" value="<?php echo $options['sst_unique_token'] ?? ''; ?>">
         <input type="hidden" id="sst-api-key" value="<?php echo $options['sst_api_key'] ?? ''; ?>">
+        <input type="hidden" id="sst-privacy-policy-accepted" value="<?php echo $options['sst_privacy_policy_accepted'] ?? ''; ?>">
 
         <script>
             function pollApi() {
@@ -88,10 +88,13 @@ function sst_speed_test_page() {
                     api_key: jQuery('#sst-api-key').val(),
                     site_uri: jQuery('#sst-site-uri').val(),
                     unique_token: jQuery('#sst-unique-token').val(),
+                    sst_privacy_policy_accepted: jQuery('#sst-privacy-policy-accepted').val(),
                 };
 
                 // return early if no unique_token
-                if (!sstools_site_settings.unique_token || !sstools_site_settings.sst_privacy_policy_accepted)) {
+                if (!sstools_site_settings.unique_token || !sstools_site_settings.sst_privacy_policy_accepted) {
+                    console.log('No unique token or privacy policy accepted');
+                    console.log(sstools_site_settings);
                     return;
                 }
 
