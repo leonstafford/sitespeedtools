@@ -28,9 +28,62 @@ add_action( 'admin_post_sst_reset_settings', 'sst_reset_settings' );
 add_action( 'admin_sst_get_api_key', 'sst_get_api_key' );
 add_action( 'wp_ajax_sst_generate_unique_token', 'sst_generate_unique_token' );
 
+// Hook into the init action
+add_action('init', 'sst_init');
+function sst_init() {
+    // Create a new rewrite rule for /?site-speed-tools-verification=some-token and a handler function
+    add_rewrite_rule('^site-speed-tools-verification/([^/]*)/?', 'index.php?site-speed-tools-verification=$matches[1]', 'top');
+}
+
+// Add a query var for the rewrite rule
+add_filter('query_vars', 'sst_add_query_vars');
+function sst_add_query_vars($vars) {
+    $vars[] = 'site-speed-tools-verification';
+    return $vars;
+}
+
+// Add a handler function for the query var
+add_action('parse_request', 'sst_parse_request');
+function sst_parse_request(&$wp) {
+    if (array_key_exists('site-speed-tools-verification', $wp->query_vars)) {
+        error_log('parsing request');
+
+        // get or create the temporary token
+        $options = get_option('sst_settings');
+        $temp_token = isset($options['sst_temp_token']) ? $options['sst_temp_token'] : '';
+
+        // if the token is not set, exit with a 404
+        if (!$temp_token) {
+            error_log('no temp token, exiting');
+            header('HTTP/1.0 404 Not Found');
+            exit;
+        }
+
+        error_log('temp token: ' . $temp_token);
+
+        // get the token from the query var
+        $queried_token = $wp->query_vars['site-speed-tools-verification'];
+        error_log('queried token: ' . $queried_token);
+
+        // if the token matches the temporary token, print the verification file
+        if ($queried_token === $temp_token) {
+            error_log('tokens match, printing verification code');
+            header('Content-Type: text/plain');
+            echo $queried_token;
+            exit;
+        } else {
+            error_log('tokens do not match');
+            header('HTTP/1.0 404 Not Found');
+            exit;
+        }
+    }
+}
+
 function sst_generate_unique_token() {
     $options = get_option('sst_settings');
     $site_uri = isset($options['sst_override_url']) ? $options['sst_override_url'] : get_site_url();
+
+
 
     // $site_url without the protocol and url encoded
     $site_uri = urlencode(str_replace(array('http://', 'https://'), '', $site_uri)); 
