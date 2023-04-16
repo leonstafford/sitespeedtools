@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once plugin_dir_path( __FILE__ ) . 'settings-page.php';
 require_once plugin_dir_path( __FILE__ ) . 'speed-test-page.php';
+require_once plugin_dir_path( __FILE__ ) . 'privacy-page.php';
 
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
@@ -60,6 +61,14 @@ function sst_add_admin_menu() {
         'manage_options',
         'site_speed_tools_settings',
         'sst_options_page'
+    );
+    add_submenu_page(
+        'site_speed_tools_speed_test',
+        'Privacy',
+        'Privacy',
+        'manage_options',
+        'site_speed_tools_privacy',
+        'sst_privacy_page'
     );
 }
 

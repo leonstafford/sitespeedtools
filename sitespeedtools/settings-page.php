@@ -11,6 +11,12 @@ function sst_settings_init(  ) {
 
     $settings_fields = [
         [
+            'id' => 'sst_privacy_terms_accepted_checkbox',
+            'title' => __('Agreed with Privacy policy', 'wordpress'),
+            'type' => 'checkbox',
+            'description' => __('By checking this box, you\'ve agreed to the Privacy Policy and Terms of Service.', 'wordpress')
+        ],
+        [
             'id' => 'sst_override_url_checkbox',
             'title' => __('Override Site URL', 'wordpress'),
             'type' => 'checkbox',
@@ -62,7 +68,7 @@ function sst_settings_init(  ) {
             'sst_render_field',
             'pluginPage',
             'sst_pluginPage_section',
-            ['id' => $field['id'], 'type' => $field['type'], 'readonly' => $field['readonly'] ?? false]
+            ['id' => $field['id'], 'type' => $field['type'], 'description' => $field['description'], 'readonly' => $field['readonly'] ?? false]
         );
     }, $settings_fields);
 }
@@ -71,7 +77,7 @@ function sst_render_field($args) {
     $options = get_option('sst_settings', []);
     $id = $args['id'];
     $type = $args['type'];
-    $description = $args['description'] ?? '';
+    $description = $args['description'];
     if ($type === 'checkbox') {
         echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, isset($options[$id]) ? $options[$id] : 0, false) . ">";
     } else {
@@ -85,23 +91,29 @@ function sst_render_field($args) {
 function sst_reset_settings() {
     // delete all options
     delete_option('sst_settings');
-    delete_option('sst_api_key');
-    delete_option('sst_unique_token');
+    // add a transient to show a WP notice on the next page load
+    set_transient( 'sst_reset_settings', true, 5 );
     // redirect back to settings page
     wp_redirect(admin_url('admin.php?page=site_speed_tools_settings'));
     exit;
 }
 
 function sst_options_page() {
-    delete_transient( 'sst_api_error' );
+    // if the transient is set, show a WP notice
+    if ( get_transient( 'sst_reset_settings' ) ) {
+        echo "<div class='notice notice-success is-dismissible'><p>Settings have been reset.</p></div>";
+        delete_transient( 'sst_reset_settings' );
+    }
     ?>
     <div class="wrap">
         <h1>Site Speed Tools</h1>
 
         <?php
             // if API key isn't set, show a WP notice with a Button to "Get Free API Key", which submits to sst_get_api_key()
-            if (!get_option('sst_api_key')) {
-                echo "<div class='notice notice-warning is-dismissible'><p>Site Speed Tools is not yet fully configured. <a href='" . admin_url('admin.php?page=sst-get-api-key') . "'>Generate Free API Key</a></p></div>";
+            if (!get_option('sst_accepted_terms')) {
+                $privacy_page_url = admin_url('admin.php?page=site_speed_tools_privacy');
+                echo "<div class='notice notice-warning is-dismissible'><p>Please review and agree to our <a href=" .
+                    $privacy_page_url . ">Privacy Policy</a> to start using Site Speed Tools</p></div>";
             }
 
 
@@ -155,5 +167,5 @@ function sst_options_page() {
 }
 
 function sst_settings_section_callback(  ) { 
-    echo __( 'Check/adjust your Site Speed Tools settings below:', 'wordpress' );
+    // echo __( 'Check/adjust your Site Speed Tools settings below:', 'wordpress' );
 }
