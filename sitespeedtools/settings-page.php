@@ -141,11 +141,8 @@ function sst_options_page() {
     </div>
     <script>
         jQuery(document).ready(function($) {
-            // call the sst_generate_unique_token admin ajax function to generate a unique token.
             function generateUniqueToken() {
-                // add spinner to right of the #sst_unique_token field
                 $('#sst_unique_token').after('<span class="spinner is-active" style="float: none; margin: 0 2px 0 0; visibility: visible;"></span>');
-                // remove the error message if it exists
                 $('.error-message').remove();
                 $.ajax({
                     url: ajaxurl,
@@ -154,40 +151,33 @@ function sst_options_page() {
                         action: 'sst_generate_unique_token'
                     },
                     success: function(response) {
-                        // decode response as JSON
                         response = JSON.parse(response);
 
-                        // if response contains {"success":false,"message":null} then show error message
                         if (response.success === false) {
                             $('#sst_unique_token').after('<span class="error-message" style="color: red; margin-left: 10px;"> ' + response.message + '&nbsp;&nbsp;<button id="sst_generate_unique_token">Regenerate</button></span>');
-                            // on click of the Regenerate button, call the generateUniqueToken() function again
                             $('#sst_generate_unique_token').on('click', function() {
                                 generateUniqueToken();
                             });
                         }
 
-                        // if response contains {"success":true,"message":"unique token"} then set the #sst_unique_token field value to the unique token
-                        if (response.success === true && response.message !== null) {
-                            $('#sst_unique_token').val(response.message);
+                        if (response.success === true && response.token !== null) {
+                            $('#sst_unique_token').attr('value', response.token);
                         }
 
                     },
                     error: function(response) {
-                    // on error, show error message to right of the #sst_unique_token field, including a Regenate button
+                        console.log('error from ajax request', response);
                         $('#sst_unique_token').after('<span class="error-message" style="color: red; margin-left: 10px;">Error generating unique token. <button id="sst_generate_unique_token">Regenerate</button></span>');
-                        // on click of the Regenerate button, call the generateUniqueToken() function again
                         $('#sst_generate_unique_token').on('click', function() {
                             generateUniqueToken();
                         });
                     },
                     complete: function() {
-                        // remove spinner
                         $('.spinner').remove();
                     }
                 });
             }
 
-            // if the #sst_unique_token field is empty, generate a unique token
             if ($('#sst_unique_token').val() === '') {
                 generateUniqueToken();
             }        

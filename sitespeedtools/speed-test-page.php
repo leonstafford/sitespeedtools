@@ -66,10 +66,8 @@ function sst_speed_test_page() {
         
             $site_url = get_site_url();
 
-            error_log('site_url: ' . $site_url);
-
-            // get WordPress site URL without protocol
-            $site_url = preg_replace('#^https?://#', '', $site_url);
+            // get WordPress site URL without protocol and url encoded
+            $site_url = urlencode(str_replace(array('http://', 'https://'), '', $site_url)); 
 
             $url_override = $options['sst_url_override'] ?? '';
 
@@ -93,7 +91,7 @@ function sst_speed_test_page() {
                 };
 
                 // return early if no unique_token
-                if (!sstools_site_settings.unique_token) {
+                if (!sstools_site_settings.unique_token || !sstools_site_settings.sst_privacy_policy_accepted)) {
                     return;
                 }
 
