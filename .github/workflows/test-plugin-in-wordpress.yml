@@ -33,6 +33,7 @@ jobs:
       
     - name: Launch and Test WordPress Site
       run: |
+        mkdir -p videos screenshots
         ./launch-and-test-wp-site.sh
 
   save_test_artifacts:
