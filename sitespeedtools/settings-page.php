@@ -11,25 +11,19 @@ function sst_settings_init(  ) {
 
     $settings_fields = [
         [
-            'id' => 'sst_privacy_terms_accepted_checkbox',
+            'id' => 'sst_privacy_policy_accepted',
             'title' => __('Agreed with Privacy policy', 'wordpress'),
             'type' => 'checkbox',
             'description' => __('By checking this box, you\'ve agreed to the Privacy Policy and Terms of Service.', 'wordpress')
         ],
         [
-            'id' => 'sst_override_url_checkbox',
+            'id' => 'sst_override_url',
             'title' => __('Override Site URL', 'wordpress'),
             'type' => 'checkbox',
             'description' => __('Use this if the public URL for your WordPress site differs from your WP Site URL.', 'wordpress')
         ],
         [
-            'id' => 'sst_override_url_text',
-            'title' => __('Override URL', 'wordpress'),
-            'type' => 'text',
-            'description' => __('Enter the URL of the site you want to test.', 'wordpress')
-        ],
-        [
-            'id' => 'sst_basic_auth_checkbox',
+            'id' => 'sst_basic_auth',
             'title' => __('Use Basic Auth', 'wordpress'),
             'type' => 'checkbox',
             'description' => __('Use this if you want to test a site protected by HTTP Basic Auth.', 'wordpress')
@@ -109,8 +103,10 @@ function sst_options_page() {
         <h1>Site Speed Tools</h1>
 
         <?php
-            // if API key isn't set, show a WP notice with a Button to "Get Free API Key", which submits to sst_get_api_key()
-            if (!get_option('sst_accepted_terms')) {
+            $options = get_option('sst_settings');
+            $privacy_policy_accepted = isset($options['sst_privacy_policy_accepted']) ? $options['sst_privacy_policy_accepted'] : false;
+
+            if (! $privacy_policy_accepted) {
                 $privacy_page_url = admin_url('admin.php?page=site_speed_tools_privacy');
                 echo "<div class='notice notice-warning is-dismissible'><p>Please review and agree to our <a href=" .
                     $privacy_page_url . ">Privacy Policy</a> to start using Site Speed Tools</p></div>";

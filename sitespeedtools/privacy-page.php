@@ -33,11 +33,10 @@ function sst_privacy_page() {
         </ul>
 
         <p>In order to use Site Speed Tools, please review and agree to the terms of this Privacy Policy.</p>
-        <form method="post" action="admin-post.php">
+        
+        <form action="<?php echo admin_url('admin-post.php'); ?>" method="post">
             <input type="hidden" name="action" value="sst_accept_privacy_policy">
-            <?php
-                submit_button('Accept Privacy Policy');
-            ?>
+            <?php submit_button('Accept Privacy Policy'); ?>
         </form>
     </div>
 

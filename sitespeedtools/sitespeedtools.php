@@ -23,8 +23,19 @@ require_once plugin_dir_path( __FILE__ ) . 'privacy-page.php';
 add_action( 'admin_menu', 'sst_add_admin_menu' );
 add_action( 'admin_init', 'sst_settings_init' );
 add_action( 'admin_post_sst_run_speed_test', 'sst_run_speed_test' );
+add_action( 'admin_post_sst_accept_privacy_policy', 'sst_accept_privacy_policy' );
 add_action( 'admin_post_sst_reset_settings', 'sst_reset_settings' );
 add_action( 'admin_sst_get_api_key', 'sst_get_api_key' );
+
+function sst_accept_privacy_policy() {
+    error_log('accepting privacy policy');
+    $options = get_option('sst_settings');
+    error_log('options before: ' . print_r($options, true));
+    $options['sst_privacy_policy_accepted'] = true;
+    update_option('sst_settings', $options);
+    error_log('options after: ' . print_r($options, true));
+    wp_redirect(admin_url('admin.php?page=site_speed_tools_settings'));
+}
 
 function sst_get_api_key() {
     $options = get_option('sst_settings');
