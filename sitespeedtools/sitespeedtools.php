@@ -26,6 +26,7 @@ add_action( 'admin_post_sst_run_speed_test', 'sst_run_speed_test' );
 add_action( 'admin_post_sst_accept_privacy_policy', 'sst_accept_privacy_policy' );
 add_action( 'admin_post_sst_reset_settings', 'sst_reset_settings' );
 add_action( 'admin_sst_get_api_key', 'sst_get_api_key' );
+add_action( 'wp_ajax_sst_generate_unique_token', 'sst_generate_unique_token' );
 
 function sst_accept_privacy_policy() {
     error_log('accepting privacy policy');
