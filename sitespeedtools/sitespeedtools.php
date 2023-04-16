@@ -28,6 +28,33 @@ add_action( 'admin_post_sst_reset_settings', 'sst_reset_settings' );
 add_action( 'admin_sst_get_api_key', 'sst_get_api_key' );
 add_action( 'wp_ajax_sst_generate_unique_token', 'sst_generate_unique_token' );
 
+function sst_generate_unique_token() {
+    $options = get_option('sst_settings');
+    $site_uri = isset($options['sst_override_url']) ? $options['sst_override_url'] : get_site_url();
+
+    // $site_url without the protocol and url encoded
+    $site_uri = urlencode(str_replace(array('http://', 'https://'), '', $site_uri)); 
+
+    $url = 'http://apitest.sitespeedtools.com/v1/get-unique-token/' . $site_uri;
+    $response = wp_remote_get($url);
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body);
+    if (isset($data->success) && $data->success) {
+        $options['sst_unique_token'] = $data->token;
+        update_option('sst_settings', $options);
+        echo json_encode(array(
+            'success' => true,
+            'token' => $data->token,
+        ));
+    } else {
+        echo json_encode(array(
+            'success' => false,
+            'message' => isset($data->message) ? $data->message : 'Failed to generate unique token.',
+        ));
+    }
+    wp_die();
+}
+
 function sst_accept_privacy_policy() {
     error_log('accepting privacy policy');
     $options = get_option('sst_settings');
