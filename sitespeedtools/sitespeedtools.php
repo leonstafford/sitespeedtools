@@ -81,9 +81,7 @@ function sst_parse_request(&$wp) {
 
 function sst_generate_unique_token() {
     $options = get_option('sst_settings');
-    $site_uri = isset($options['sst_override_url']) ? $options['sst_override_url'] : get_site_url();
-
-
+    $site_uri = ( isset($options['sst_override_url']) && $options['sst_override_url'] !== '' ) ? $options['sst_override_url'] : get_site_url();
 
     // $site_url without the protocol and url encoded
     $site_uri = urlencode(str_replace(array('http://', 'https://'), '', $site_uri)); 

@@ -177,8 +177,8 @@ function sst_options_page() {
                     }
                 });
             }
-
-            if ($('#sst_unique_token').val() === '') {
+            // check if the unique token is empty and generate a new one if it is only if sst_privacy_policy_accepted is true
+            if ($('#sst_unique_token').val() === '' && $('#sst_privacy_policy_accepted').is(':checked')) {
                 generateUniqueToken();
             }        
 
