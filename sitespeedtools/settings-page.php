@@ -89,6 +89,8 @@ function sst_render_field($args) {
         if (isset($options[$id]) && $options[$id]) {
             echo "<span class='dashicons dashicons-yes' style='color: #46b450; float: left;'></span>";
             echo "<p class='description'>You've agreed to our <a href=" . $privacy_page_url . ">Privacy Policy</a>.</p>";
+            // add hidden field to store the value for JS to read
+            echo "<input type='hidden' id='$id' name='sst_settings[$id]' value='1'>";
         } else {
             echo "<p class='description'>Please review and agree to our <a href=" . $privacy_page_url . ">Privacy Policy</a> to start using Site Speed Tools</p>";
         }
@@ -188,9 +190,10 @@ function sst_options_page() {
                 });
             }
             // check if the unique token is empty and generate a new one if it is only if sst_privacy_policy_accepted is true
-            if ($('#sst_unique_token').val() === '' && $('#sst_privacy_policy_accepted').is(':checked')) {
+            if ($('#sst_unique_token').val() === '' && $('#sst_privacy_policy_accepted')[0].value === '1') {
                 generateUniqueToken();
             }        
+           
 
             function updateFieldVisibility() {
                 const overrideUrlCheckbox = $('#sst_use_override_url');
