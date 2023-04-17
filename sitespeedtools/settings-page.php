@@ -93,6 +93,7 @@ function sst_render_field($args) {
             echo "<input type='hidden' id='$id' name='sst_settings[$id]' value='1'>";
         } else {
             echo "<p class='description'>Please review and agree to our <a href=" . $privacy_page_url . ">Privacy Policy</a> to start using Site Speed Tools</p>";
+            echo "<input type='hidden' id='$id' name='sst_settings[$id]' value='0'>";
         }
     } else {
         // add readonly attribute if readonly is set to true
