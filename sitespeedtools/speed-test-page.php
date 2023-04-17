@@ -104,11 +104,16 @@ function sst_speed_test_page() {
                     sstools_site_settings.last_time = 0;
                 }
 
-                const API_ENDPOINT = 'http://apitest.sitespeedtools.com/v1/speed-test-results';
+
+                // store url encoded site_uri as const
+                const site_uri = encodeURIComponent(sstools_site_settings.site_uri);
+                const unique_token = sstools_site_settings.unique_token;
+                
+                const API_ENDPOINT = 'http://apitest.sitespeedtools.com/v1/speed-test-results/' + site_uri + '/' + unique_token;
                 jQuery.ajax({
                     url: API_ENDPOINT,
                     type: 'GET',
-                    data: sstools_site_settings,
+                    // data: sstools_site_settings,
                     success: function(data) {
                         console.log(data);
 
