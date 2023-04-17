@@ -193,10 +193,17 @@ function sst_run_speed_test() {
         exit;
     }
 
-    $api_key = $options['sst_api_key'];
+    $api_key = $options['sst_api_key'] ?? '';
+    $unique_token = $options['sst_unique_token'] ?? '';
+
+    $site_uri = ( isset($options['sst_override_url']) && $options['sst_override_url'] !== '' ) ? $options['sst_override_url'] : get_site_url();
+
+    // $site_url url encoded
+    $site_uri = urlencode($site_uri); 
+
     $site_info = sst_get_site_info();
 
-    $api_endpoint = 'http://apitest.sitespeedtools.com/v1/speed-test/create';
+    $api_endpoint = 'http://apitest.sitespeedtools.com/v1/speed-test/create/' . $site_uri . '/' . $unique_token . '/' . $api_key;
 
     $response = wp_remote_request( $api_endpoint, array(
         'method' => 'POST',
@@ -208,7 +215,6 @@ function sst_run_speed_test() {
             'Content-Type' => 'application/json',
         ],
         'body' => json_encode([
-            'api_key' => $api_key,
             'site_info' => $site_info
         ]),
         'cookies' => array()

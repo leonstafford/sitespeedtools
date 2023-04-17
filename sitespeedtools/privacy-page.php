@@ -36,7 +36,18 @@ function sst_privacy_page() {
         
         <form action="<?php echo admin_url('admin-post.php'); ?>" method="post">
             <input type="hidden" name="action" value="sst_accept_privacy_policy">
-            <?php submit_button('Accept Privacy Policy'); ?>
+            <!-- show Accept Privacy Policy button only if the user has not already accepted, else show a message that they can revoke their consent by resetting the plugin's settings on Settings page -->
+            <?php
+                $options = get_option('sst_settings');
+                $privacy_policy_accepted = isset($options['sst_privacy_policy_accepted']) ? $options['sst_privacy_policy_accepted'] : false;
+                if (! $privacy_policy_accepted) {
+                    submit_button('Accept Privacy Policy');
+                } else {
+                    // green checkbox dashicon, float left
+                    echo "<span class='dashicons dashicons-yes' style='color: #46b450; float: left;'></span>";
+                    echo "<p class='description'>You have already accepted the Privacy Policy. You can revoke your consent by resetting the plugin's settings on the <a href='" . admin_url('admin.php?page=site_speed_tools_settings') . "'>Settings page</a>.</p>";
+                }
+            ?>
         </form>
     </div>
 

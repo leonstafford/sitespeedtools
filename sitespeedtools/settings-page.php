@@ -14,9 +14,10 @@ function sst_settings_init(  ) {
     $settings_fields = [
         [
             'id' => 'sst_privacy_policy_accepted',
-            'title' => __('Agreed with Privacy policy', 'wordpress'),
-            'type' => 'checkbox',
-            'description' => __('By checking this box, you\'ve agreed to the Privacy Policy and Terms of Service.', 'wordpress')
+            'title' => __('Agreed with Privacy policy?', 'wordpress'),
+            'type' => 'privacy-policy',
+            'description' => '',
+            'readonly' => true
         ],
         [
             'id' => 'sst_use_override_url',
@@ -52,7 +53,7 @@ function sst_settings_init(  ) {
             'id' => 'sst_api_key',
             'title' => __('API Key', 'wordpress'),
             'type' => 'text',
-            'description' => __('Premium accounts can receive an API Key from <a href="https://sitespeedtools.com" target="_blank">SiteSpeedTools.com</>, enabling more features for you.', 'wordpress')
+            'description' => __('Premium accounts can receive an API Key from <a href="https://sitespeedtools.com" target="_blank">SiteSpeedTools.com</a>, enabling more features for you.', 'wordpress')
         ],
         [
             'id' => 'sst_unique_token',
@@ -80,8 +81,17 @@ function sst_render_field($args) {
     $id = $args['id'];
     $type = $args['type'];
     $description = $args['description'];
+        $readonly = isset($args['readonly']) && $args['readonly'] ? 'readonly' : '';
     if ($type === 'checkbox') {
         echo "<input type='checkbox' id='$id' name='sst_settings[$id]' value='1' " . checked(1, isset($options[$id]) ? $options[$id] : 0, false) . ">";
+    } else if ($type === 'privacy-policy') {
+        $privacy_page_url = admin_url('admin.php?page=site_speed_tools_privacy');
+        if (isset($options[$id]) && $options[$id]) {
+            echo "<span class='dashicons dashicons-yes' style='color: #46b450; float: left;'></span>";
+            echo "<p class='description'>You've agreed to our <a href=" . $privacy_page_url . ">Privacy Policy</a>.</p>";
+        } else {
+            echo "<p class='description'>Please review and agree to our <a href=" . $privacy_page_url . ">Privacy Policy</a> to start using Site Speed Tools</p>";
+        }
     } else {
         // add readonly attribute if readonly is set to true
         $readonly = isset($args['readonly']) && $args['readonly'] ? 'readonly' : '';
